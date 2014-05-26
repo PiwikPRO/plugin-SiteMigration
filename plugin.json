@@ -1,0 +1,15 @@
+{
+    "name": "SiteMigrator",
+    "version": "0.0.1",
+    "description": "Migrate site and site data between piwik installations",
+    "theme": false,
+    "license": "Paid plugin",
+    "license_page": "http://piwik.pro/contact",
+    "authors": [
+        {
+            "name": "Piwik PRO",
+            "email": "contact@piwik.pro",
+            "homepage": "http://piwik.pro"
+        }
+    ]
+}
