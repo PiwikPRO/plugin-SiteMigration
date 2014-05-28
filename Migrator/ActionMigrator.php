@@ -25,30 +25,13 @@ class ActionMigrator
         $this->fromDbHelper = $fromDb;
         $this->toDbHelper = $toDb;
         $this->idMapCollection = $idMapCollection;
+        $this->existingActions = array();
     }
 
-    public function migrateActions($idSite)
+    protected function processAction($action)
     {
-        $actions = $this->getActionsForIdSiteQuery($idSite);
-
-        $this->loadExistingActions();
-
-        while ($action = $actions->fetch()) {
-            $this->processAction($action);
-        }
-
-        $actions->closeCursor();
-        unset ($actions);
-        gc_collect_cycles();
-
-    }
-
-    public function processAction($action)
-    {
-        if (array_key_exists($action['type'], $this->existingActions) && array_key_exists(
-                $action['hash'],
-                $this->existingActions[$action['type']]
-            )
+        if (array_key_exists($action['type'], $this->existingActions)
+            && array_key_exists($action['hash'],$this->existingActions[$action['type']])
         ) {
             $this->idMapCollection->getActionMap()->add(
                 $action['idaction'],
@@ -64,82 +47,7 @@ class ActionMigrator
         unset($action);
     }
 
-    public function getActionIdsForIdSite($idSite)
-    {
-        $data = $this->fromDbHelper->getAdapter()->fetchCol(
-            'SELECT DISTINCT idaction_url FROM ' . $this->fromDbHelper->prefixTable('log_link_visit_action')
-            . ' WHERE idsite = :id_site AND idaction_url IS NOT NULL'
-            . ' UNION DISTINCT SELECT idaction_url_ref FROM ' . $this->fromDbHelper->prefixTable(
-                'log_link_visit_action'
-            )
-            . ' WHERE idsite = :id_site AND idaction_url_ref IS NOT NULL'
-            . ' UNION DISTINCT SELECT idaction_name FROM ' . $this->fromDbHelper->prefixTable('log_link_visit_action')
-            . ' WHERE idsite = :id_site AND idaction_name IS NOT NULL'
-            . ' UNION DISTINCT SELECT idaction_name_ref FROM ' . $this->fromDbHelper->prefixTable(
-                'log_link_visit_action'
-            )
-            . ' WHERE idsite = :id_site AND idaction_name_ref IS NOT NULL'
-            . ' UNION DISTINCT SELECT idaction_event_category FROM ' . $this->fromDbHelper->prefixTable(
-                'log_link_visit_action'
-            )
-            . ' WHERE idsite = :id_site AND idaction_event_category IS NOT NULL'
-            . ' UNION DISTINCT SELECT idaction_event_action FROM ' . $this->fromDbHelper->prefixTable(
-                'log_link_visit_action'
-            )
-            . ' WHERE idsite = :id_site AND idaction_event_action IS NOT NULL'
-            . ' UNION DISTINCT SELECT visit_exit_idaction_url FROM ' . $this->fromDbHelper->prefixTable('log_visit')
-            . ' WHERE idsite = :id_site AND visit_exit_idaction_url IS NOT NULL'
-            . ' UNION DISTINCT SELECT visit_exit_idaction_name FROM ' . $this->fromDbHelper->prefixTable('log_visit')
-            . ' WHERE idsite = :id_site AND visit_exit_idaction_name IS NOT NULL'
-            . ' UNION DISTINCT SELECT visit_entry_idaction_url FROM ' . $this->fromDbHelper->prefixTable('log_visit')
-            . ' WHERE idsite = :id_site AND visit_entry_idaction_url IS NOT NULL'
-            . ' UNION DISTINCT SELECT visit_entry_idaction_name FROM ' . $this->fromDbHelper->prefixTable('log_visit')
-            . ' WHERE idsite = :id_site AND visit_entry_idaction_name IS NOT NULL'
-            . ' UNION DISTINCT SELECT idaction_url FROM ' . $this->fromDbHelper->prefixTable('log_conversion')
-            . ' WHERE idsite = :id_site AND idaction_url IS NOT NULL'
-            . ' UNION DISTINCT SELECT idaction_sku FROM ' . $this->fromDbHelper->prefixTable('log_conversion_item')
-            . ' WHERE idsite = :id_site AND idaction_sku IS NOT NULL'
-            . ' UNION DISTINCT SELECT idaction_name FROM ' . $this->fromDbHelper->prefixTable('log_conversion_item')
-            . ' WHERE idsite = :id_site AND idaction_name IS NOT NULL'
-            . ' UNION DISTINCT SELECT idaction_category FROM ' . $this->fromDbHelper->prefixTable('log_conversion_item')
-            . ' WHERE idsite = :id_site AND idaction_category IS NOT NULL'
-            . ' UNION DISTINCT SELECT idaction_category2 FROM ' . $this->fromDbHelper->prefixTable(
-                'log_conversion_item'
-            )
-            . ' WHERE idsite = :id_site AND idaction_category2 IS NOT NULL'
-            . ' UNION DISTINCT SELECT idaction_category3 FROM ' . $this->fromDbHelper->prefixTable(
-                'log_conversion_item'
-            )
-            . ' WHERE idsite = :id_site AND idaction_category3 IS NOT NULL'
-            . ' UNION DISTINCT SELECT idaction_category4 FROM ' . $this->fromDbHelper->prefixTable(
-                'log_conversion_item'
-            )
-            . ' WHERE idsite = :id_site AND idaction_category4 IS NOT NULL'
-            . ' UNION DISTINCT SELECT idaction_category5 FROM ' . $this->fromDbHelper->prefixTable(
-                'log_conversion_item'
-            )
-            . ' WHERE idsite = :id_site AND idaction_category5 IS NOT NULL'
-            ,
-            array('id_site' => $idSite)
-        );
-
-        return $data;
-    }
-
-    public function getActionsForIdSiteQuery($idSite)
-    {
-        $query = $this->fromDbHelper->getAdapter()->prepare(
-            'SELECT * FROM ' . $this->fromDbHelper->prefixTable('log_action') . ' WHERE idaction IN (' . implode(
-                ', ',
-                $this->getActionIdsForIdSite($idSite)
-            ) . ')'
-        );
-        $query->execute();
-
-        return $query;
-    }
-
-    protected function loadExistingActions()
+    public function loadExistingActions()
     {
         $query = $this->toDbHelper->getAdapter()->prepare(
             'SELECT idaction, hash, type FROM ' . $this->toDbHelper->prefixTable('log_action')

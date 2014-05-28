@@ -15,6 +15,8 @@ class ConversionMigrator
 
     protected $idMapCollection;
 
+    protected $actionMigrator;
+
     protected $actionsToTranslate = array(
         'idaction_sku',
         'idaction_name',
@@ -28,16 +30,18 @@ class ConversionMigrator
     public function __construct(
         DBHelper $fromDb,
         DBHelper $toDb,
-        IdMapCollection $idMapCollection
+        IdMapCollection $idMapCollection,
+        ActionMigrator $actionMigrator
     ) {
         $this->fromDbHelper    = $fromDb;
         $this->toDbHelper      = $toDb;
         $this->idMapCollection = $idMapCollection;
+        $this->actionMigrator  = $actionMigrator;
     }
 
     public function migrateConversions($idSite)
     {
-        $conversions = $this->getConversionsForIdSiteQuery($idSite);
+        $conversions = $this->getConversionsQuery($idSite);
 
         while ($conversion = $conversions->fetch()) {
             try {
@@ -52,7 +56,7 @@ class ConversionMigrator
 
     public function migrateConversionItems($idSite)
     {
-        $items = $this->getConversionItemsForIdSiteQuery($idSite);
+        $items = $this->getConversionItemsQuery($idSite);
 
         while ($item = $items->fetch()) {
             try {
@@ -91,7 +95,7 @@ class ConversionMigrator
         }
 
         if ($conversion['idaction_url']) {
-            $conversion['idaction_url'] = $this->idMapCollection->getActionMap()->translate(
+            $conversion['idaction_url'] = $this->translateAction(
                 $conversion['idaction_url']
             );
         }
@@ -109,25 +113,32 @@ class ConversionMigrator
                 continue;
             }
 
-            $item[$translationKey] = $this->idMapCollection->getActionMap()->translate($item[$translationKey]);
+            $item[$translationKey] = $this->translateAction($item[$translationKey]);
         }
 
     }
 
-    protected function getConversionsForIdSiteQuery($idSite)
+    protected function getConversionsQuery($idSite)
     {
         $query = $this->fromDbHelper->getAdapter()->prepare(
-            'SELECT * FROM ' . $this->fromDbHelper->prefixTable('log_conversion') . ' WHERE idsite  = :idSite'
+            'SELECT * FROM ' . $this->fromDbHelper->prefixTable('log_conversion') . ' WHERE idsite  = :idSite AND idvisit IN (' . implode(',', array_keys($this->idMapCollection->getVisitMap()->getIds())) . ')'
         );
         $query->execute(array('idSite' => $idSite));
 
         return $query;
     }
 
-    protected function getConversionItemsForIdSiteQuery($idSite)
+    protected function translateAction($idAction)
+    {
+        $this->actionMigrator->ensureActionIsMigrated($idAction);
+
+        return $this->idMapCollection->getActionMap()->translate($idAction);
+    }
+
+    protected function getConversionItemsQuery($idSite)
     {
         $query = $this->fromDbHelper->getAdapter()->prepare(
-            'SELECT * FROM ' . $this->fromDbHelper->prefixTable('log_conversion_item') . ' WHERE idsite  = :idSite'
+            'SELECT * FROM ' . $this->fromDbHelper->prefixTable('log_conversion_item') . ' WHERE idsite  = :idSite AND idvisit IN (' . implode(',', array_keys($this->idMapCollection->getVisitMap()->getIds())) . ')'
         );
         $query->execute(array('idSite' => $idSite));
 

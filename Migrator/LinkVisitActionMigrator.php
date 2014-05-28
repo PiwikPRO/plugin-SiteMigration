@@ -33,7 +33,7 @@ class LinkVisitActionMigrator
         $currentCount = 0;
 
         do {
-            $visitActions = $this->getVisitsActionsForIdSiteQuery($idSite, $currentCount);
+            $visitActions = $this->getVisitsActionsQuery($idSite, $currentCount);
             $count        = 0;
 
             while ($visitAction = $visitActions->fetch()) {
@@ -84,12 +84,12 @@ class LinkVisitActionMigrator
         return $this->idMapCollection->getActionMap()->translate($idAction);
     }
 
-    protected function getVisitsActionsForIdSiteQuery($idSite, $currentCount, $limit = 10000)
+    protected function getVisitsActionsQuery($idSite, $currentCount, $limit = 10000)
     {
         $query = $this->fromDbHelper->getAdapter()->prepare(
             'SELECT * FROM ' . $this->fromDbHelper->prefixTable(
                 'log_link_visit_action'
-            ) . ' WHERE idsite  = :idSite LIMIT ' . $currentCount . ', ' . $limit
+            ) . ' WHERE idsite  = :idSite AND idvisit IN (' . implode(',', array_keys($this->idMapCollection->getVisitMap()->getIds())) . ')  LIMIT ' . $currentCount . ', ' . $limit
         );
         $query->execute(array('idSite' => $idSite));
 

@@ -62,9 +62,16 @@ class MigrateSite extends ConsoleCommand
         $this->setName('migrate:site');
         $this->setDescription('Migrate site between Piwik instances');
         $this->addArgument('idSite', InputArgument::REQUIRED, 'Site id');
+
+        /**
+         * Migration options
+         */
         $this->addOption('skip-archived', null, InputOption::VALUE_NONE, 'Skip migration of archived data');
         $this->addOption('skip-raw', null, InputOption::VALUE_NONE, 'Skip migration of raw data');
 
+        /**
+         * Database options
+         */
         $this->addOption('host', 'H', InputOption::VALUE_REQUIRED, 'Destination database host');
         $this->addOption('username', 'U', InputOption::VALUE_REQUIRED, 'Destination database username');
         $this->addOption('password', 'P', InputOption::VALUE_REQUIRED, 'Destination database password');
@@ -78,6 +85,26 @@ class MigrateSite extends ConsoleCommand
         );
         $this->addOption('port', null, InputOption::VALUE_REQUIRED, 'Destination database port', '3306');
 
+        /**
+         * Visit query options
+         */
+        $this->addOption(
+            'date-from',
+            'F',
+            InputOption::VALUE_REQUIRED,
+            'Start date from which data should be migrated'
+        );
+        $this->addOption('date-to', 'T', InputOption::VALUE_REQUIRED, 'Start date from which data should be migrated');
+
+        /**
+         * Site id options
+         */
+        $this->addOption(
+            'new-id-site',
+            'I',
+            InputOption::VALUE_REQUIRED,
+            'New site id, if provided site config will not be migrated, raw and archive data will be copied into existing site'
+        );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -131,8 +158,10 @@ class MigrateSite extends ConsoleCommand
         $endTime = microtime(true);
 
         $output->writeln(sprintf(PHP_EOL . '<comment>Time taken %01.2f sec</comment>', $endTime - $startTime));
-        $output->writeln(sprintf('<comment>Memory allocated %01.2f MB</comment>', memory_get_usage(true)/1048576));
-        $output->writeln(sprintf('<comment>Memory allocated peak %01.2f MB</comment>', memory_get_peak_usage(true)/1048576));
+        $output->writeln(sprintf('<comment>Memory allocated %01.2f MB</comment>', memory_get_usage(true) / 1048576));
+        $output->writeln(
+            sprintf('<comment>Memory allocated peak %01.2f MB</comment>', memory_get_peak_usage(true) / 1048576)
+        );
     }
 
 
@@ -141,6 +170,12 @@ class MigrateSite extends ConsoleCommand
         OutputInterface $output,
         $idSite
     ) {
+
+        if ($newSiteId = $input->getOption('new-id-site')) {
+            $this->idMapCollection->getSiteMap()->add($idSite, $newSiteId);
+            return;
+        }
+
         $siteConfigMigrator = new SiteConfigMigrator($this->fromDbHelper, $this->toDbHelper, $this->idMapCollection);
         $output->writeln('<info>Migrating settings...</info>');
         $output->writeln('<comment> - Main settings</comment>');
@@ -175,12 +210,30 @@ class MigrateSite extends ConsoleCommand
         $actionMigrator      = new ActionMigrator($this->fromDbHelper, $this->toDbHelper, $this->idMapCollection);
         $visitMigrator       = new VisitMigrator($this->fromDbHelper, $this->toDbHelper, $this->idMapCollection, $actionMigrator);
         $visitActionMigrator = new LinkVisitActionMigrator($this->fromDbHelper, $this->toDbHelper, $this->idMapCollection, $actionMigrator);
-        $conversionMigrator  = new ConversionMigrator($this->fromDbHelper, $this->toDbHelper, $this->idMapCollection);
+        $conversionMigrator  = new ConversionMigrator($this->fromDbHelper, $this->toDbHelper, $this->idMapCollection, $actionMigrator);
+
+        if ($dateFrom = $input->getOption('date-from')) {
+            $dateFrom = new \DateTime($dateFrom);
+            $visitMigrator->andWhere('visit_last_action_time', $dateFrom->format('Y-m-d'), '>=');
+        }
+        if ($dateTo = $input->getOption('date-to')) {
+            $dateTo = new \DateTime($dateTo);
+            $visitMigrator->andWhere('visit_last_action_time', $dateTo->format('Y-m-d'), '<');
+        }
 
         $output->writeln('<info>Migrating raw data... </info>');
-        $output->writeln('<comment> - Action</comment>');
-        $actionMigrator->migrateActions($idSite);
+        $output->writeln('<comment> - Load existing actions</comment>');
+        $actionMigrator->loadExistingActions();
+
         $output->writeln('<comment> - Visit</comment>');
+        $visitCount = $visitMigrator->getVisitCount($idSite);
+
+        if (!$visitCount) {
+            $output->writeln('<error>No visits found</error>');
+            exit;
+        }
+        $output->writeln("\tMigrating " . $visitCount . ' visits');
+
         $visitMigrator->migrateVisits($idSite);
 
         $output->writeln('<comment> - Link visit - action</comment>');

@@ -5,6 +5,7 @@ namespace Piwik\Plugins\SiteMigrator\Migrator;
 
 use Piwik\Plugins\SiteMigrator\Helper\DBHelper;
 use Piwik\Plugins\SiteMigrator\Model\IdMapCollection;
+use Symfony\Component\Config\Definition\Exception\Exception;
 
 class VisitMigrator
 {
@@ -16,6 +17,8 @@ class VisitMigrator
 
     protected $actionMigrator;
 
+    protected $where;
+
     public function __construct(
         DBHelper $fromDb,
         DBHelper $toDb,
@@ -26,6 +29,7 @@ class VisitMigrator
         $this->toDbHelper      = $toDb;
         $this->idMapCollection = $idMapCollection;
         $this->actionMigrator  = $actionMigrator;
+        $this->where           = array();
     }
 
     public function migrateVisits($idSite)
@@ -40,7 +44,6 @@ class VisitMigrator
                 try {
                     $this->processVisit($visit);
                 } catch (\InvalidArgumentException $e) {
-                    //action nto found, skip
                 }
                 $count++;
             }
@@ -84,28 +87,58 @@ class VisitMigrator
         return $this->idMapCollection->getActionMap()->translate($idAction);
     }
 
-    protected function getVisitsQuery($idSite, $currentCount, $limit = 10000, $criteria = array())
+    protected function getVisitsQuery($idSite, $currentCount, $limit = 10000)
+    {
+        return $this->preapreQuery($idSite, '*', $currentCount, $limit);
+    }
+
+    protected function preapreQuery($idSite, $select, $currentCount = 0, $limit = null)
     {
         $parameters = array('idSite' => $idSite);
         $andWhere   = '';
+        $where      = $this->getWhere();
 
-        if (count($criteria) > 0) {
+        if (count($where) > 0) {
             $i = 0;
-            foreach($criteria as $key => $val) {
-                $andWhere .= 'AND ' . $key . ((isset($val['operator']))? $val['operator']: '=') . ':param' . $i;
+            foreach ($where as $val) {
+                $andWhere .= 'AND `' . $val['column'] . '`' . $val['operator'] . ' :param' . $i . ' ';
+                $parameters['param' . $i] = $val['value'];
                 $i++;
-                $parameters['param' . $i] = $val;
             }
         }
 
-        $sql   = 'SELECT * FROM ' . $this->fromDbHelper->prefixTable(
+        $sql = 'SELECT ' . $select . ' FROM ' . $this->fromDbHelper->prefixTable(
                 'log_visit'
-            ) . ' WHERE idsite = :idSite ' . $andWhere . ' LIMIT ' . $currentCount . ', ' . $limit;
-        $query = $this->fromDbHelper->getAdapter()->prepare($sql);
+            ) . ' WHERE idsite = :idSite ' . $andWhere;
 
+        if ($limit) {
+            $sql .= ' LIMIT ' . $currentCount . ', ' . $limit;
+        }
+
+        $query = $this->fromDbHelper->getAdapter()->prepare($sql);
         $query->execute($parameters);
 
         return $query;
+    }
+
+    public function getVisitCount($idSite)
+    {
+        return $this->preapreQuery($idSite, 'COUNT(idvisit)')->fetchColumn(0);
+    }
+
+    public function andWhere($column, $value, $operator = '=')
+    {
+        $this->where[] = array('column' => $column, 'value' => $value, 'operator' => $operator);
+
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getWhere()
+    {
+        return $this->where;
     }
 
 

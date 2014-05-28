@@ -27,14 +27,6 @@ class SiteConfigMigrator
         $this->idMapCollection = $idMapCollection;
     }
 
-    public function createSiteInsertQuery($idSite)
-    {
-        $site  = $this->getSiteConfig($idSite);
-        $query = $this->toDbHelper->getInsertSQL('site', $site);
-
-        return $query;
-    }
-
     /**
      * @param $idSite
      */
