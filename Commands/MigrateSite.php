@@ -218,7 +218,7 @@ class MigrateSite extends ConsoleCommand
         }
         if ($dateTo = $input->getOption('date-to')) {
             $dateTo = new \DateTime($dateTo);
-            $visitMigrator->andWhere('visit_last_action_time', $dateTo->format('Y-m-d'), '<');
+            $visitMigrator->andWhere('visit_last_action_time', $dateTo->format('Y-m-d'), '<=');
         }
 
         $output->writeln('<info>Migrating raw data... </info>');

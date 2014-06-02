@@ -1,31 +1,32 @@
 language: php
 
 php:
-- 5.3
+  - 5.4
+  - 5.4
+  - 5.3
 
 env:
+  global:
+    - PLUGIN_NAME=SiteMigrator
   matrix:
-    - TEST_SUITE=CoreTests MYSQL_ADAPTER=PDO_MYSQL
     - TEST_SUITE=PluginTests MYSQL_ADAPTER=PDO_MYSQL
 
 script: ./travis.sh
 
 install:
-  - TEST_PIWIK_VERSION=$(wget builds.piwik.org/LATEST -q -O -)
-  - TEST_PIWIK_VERSION=`echo $TEST_PIWIK_VERSION | tr -d ' ' | tr -d '\n'`
-  - mkdir SiteMigrator
-  - cp -R !(SiteMigrator) SiteMigrator
-  - cp -R .git/ SiteMigrator/
-  - git clone https://github.com/piwik/piwik.git piwik
+  - mkdir $PLUGIN_NAME
+  - cp -R !($PLUGIN_NAME) $PLUGIN_NAME
+  - cp -R .git/ $PLUGIN_NAME/
+  - git clone https://github.com/piwik/piwik.git piwik --depth=1
   - cd piwik
-  - git checkout "$TEST_PIWIK_VERSION"
+  - git checkout master
   - git submodule init
   - git submodule update || true
   - composer self-update
   - composer install
-  - rm -rf plugins/SiteMigrator
+  - rm -rf plugins/$PLUGIN_NAME
   - cd ../
-  - mv SiteMigrator piwik/plugins
+  - mv $PLUGIN_NAME piwik/plugins
 
 before_script:
   - cd piwik
@@ -34,8 +35,6 @@ before_script:
   - mysql -e 'create database piwik_tests;'
   - ./tests/travis/prepare.sh
   - ./tests/travis/setup_webserver.sh
-  - wget https://raw.github.com/piwik/piwik-tests-plugins/master/activateplugin.php
-  - php activateplugin.php SiteMigrator
   - cd tests/PHPUnit
 
 after_script:
