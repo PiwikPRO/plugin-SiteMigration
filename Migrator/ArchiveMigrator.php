@@ -21,8 +21,8 @@ class ArchiveMigrator
         DBHelper $toDb,
         IdMapCollection $idMapCollection
     ) {
-        $this->fromDbHelper = $fromDb;
-        $this->toDbHelper = $toDb;
+        $this->fromDbHelper    = $fromDb;
+        $this->toDbHelper      = $toDb;
         $this->idMapCollection = $idMapCollection;
     }
 

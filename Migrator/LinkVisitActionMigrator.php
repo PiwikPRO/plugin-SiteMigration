@@ -31,9 +31,10 @@ class LinkVisitActionMigrator
     public function migrateVisitActions($idSite)
     {
         $currentCount = 0;
+        $loadAtOnce   = 10000;
 
         do {
-            $visitActions = $this->getVisitsActionsQuery($idSite, $currentCount);
+            $visitActions = $this->getVisitsActionsQuery($idSite, $currentCount, $loadAtOnce);
             $count        = 0;
 
             while ($visitAction = $visitActions->fetch()) {
@@ -46,7 +47,8 @@ class LinkVisitActionMigrator
             }
             $currentCount += $count;
             $visitActions->closeCursor();
-        } while($count > 0);
+
+        } while($count >= $loadAtOnce);
 
         unset($visitActions);
         unset($visitAction);

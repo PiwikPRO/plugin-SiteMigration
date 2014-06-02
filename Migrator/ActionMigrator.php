@@ -59,9 +59,11 @@ class ActionMigrator
         while ($action = $query->fetch()) {
             $this->addExistingAction($action);
         }
+
+        return true;
     }
 
-    protected function addExistingAction($action)
+    public function addExistingAction($action)
     {
         if (!array_key_exists($action['type'], $this->existingActions)) {
             $this->existingActions[$action['type']] = array();
@@ -92,4 +94,21 @@ class ActionMigrator
 
         return false;
     }
+
+    /**
+     * @param array $existingActions
+     */
+    public function setExistingActions($existingActions)
+    {
+        $this->existingActions = $existingActions;
+    }
+
+    /**
+     * @return array
+     */
+    public function getExistingActions()
+    {
+        return $this->existingActions;
+    }
+
 } 

@@ -35,9 +35,10 @@ class VisitMigrator
     public function migrateVisits($idSite)
     {
         $currentCount = 0;
+        $limit        = 10000;
 
         do {
-            $visits = $this->getVisitsQuery($idSite, $currentCount);
+            $visits = $this->getVisitsQuery($idSite, $currentCount, $limit);
             $count  = 0;
 
             while ($visit = $visits->fetch()) {
@@ -50,7 +51,7 @@ class VisitMigrator
             $currentCount += $count;
 
             $visits->closeCursor();
-        } while ($count > 0);
+        } while ($count >= $limit);
 
         unset($visits);
         unset($count);
@@ -87,12 +88,19 @@ class VisitMigrator
         return $this->idMapCollection->getActionMap()->translate($idAction);
     }
 
-    protected function getVisitsQuery($idSite, $currentCount, $limit = 10000)
+    public function getVisitsQuery($idSite, $currentCount = 0, $limit = 10000)
     {
-        return $this->preapreQuery($idSite, '*', $currentCount, $limit);
+        return $this->prepareQuery($idSite, '*', $currentCount, $limit);
     }
 
-    protected function preapreQuery($idSite, $select, $currentCount = 0, $limit = null)
+    /**
+     * @param $idSite
+     * @param string $select
+     * @param int $currentCount
+     * @param null $limit
+     * @return \PDOStatement|\Zend_Db_Statement
+     */
+    protected function prepareQuery($idSite, $select = '*', $currentCount = 0, $limit = null)
     {
         $parameters = array('idSite' => $idSite);
         $andWhere   = '';
@@ -101,7 +109,7 @@ class VisitMigrator
         if (count($where) > 0) {
             $i = 0;
             foreach ($where as $val) {
-                $andWhere .= 'AND `' . $val['column'] . '`' . $val['operator'] . ' :param' . $i . ' ';
+                $andWhere .= ' AND `' . $val['column'] . '` ' . $val['operator'] . ' :param' . $i;
                 $parameters['param' . $i] = $val['value'];
                 $i++;
             }
@@ -109,7 +117,7 @@ class VisitMigrator
 
         $sql = 'SELECT ' . $select . ' FROM ' . $this->fromDbHelper->prefixTable(
                 'log_visit'
-            ) . ' WHERE idsite = :idSite ' . $andWhere;
+            ) . ' WHERE idsite = :idSite' . $andWhere;
 
         if ($limit) {
             $sql .= ' LIMIT ' . $currentCount . ', ' . $limit;
@@ -123,7 +131,7 @@ class VisitMigrator
 
     public function getVisitCount($idSite)
     {
-        return $this->preapreQuery($idSite, 'COUNT(idvisit)')->fetchColumn(0);
+        return $this->prepareQuery($idSite, 'COUNT(idvisit)')->fetchColumn(0);
     }
 
     public function andWhere($column, $value, $operator = '=')
