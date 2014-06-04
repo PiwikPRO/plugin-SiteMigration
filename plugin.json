@@ -1,6 +1,6 @@
 {
     "name": "SiteMigrator",
-    "version": "0.0.1",
+    "version": "0.1.0",
     "description": "Migrate site and site data between piwik installations",
     "theme": false,
     "license": "Paid plugin",

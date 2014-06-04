@@ -58,8 +58,8 @@ If both above conditions are met run the migrate:site command with the =I|--new-
 
 ## Changelog
 
-__v0.0.1__
-- First working version
+__v0.1.0__
+- Initial release
 
 
 ## Support
