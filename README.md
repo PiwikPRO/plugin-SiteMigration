@@ -18,6 +18,7 @@ Please run
 
 To get a full list of options.
 
+```
 __Usage:__
  migrate:site [--skip-archived] [--skip-raw] [-H|--host="..."] [-U|--username="..."] [-P|--password="..."] [-N|--dbname="..."] [--prefix="..."] [--port="..."] [-F|--date-from="..."] [-T|--date-to="..."] [-I|--new-id-site="..."] idSite
 
@@ -44,7 +45,7 @@ __Options:__
  --no-ansi             Disable ANSI output.
  --no-interaction (-n) Do not ask any interactive question.
  --piwik-domain        Piwik URL (protocol and domain) eg. "http://piwik.example.org"
-
+```
 ## FAQ
 
 __How can I migrate data between two dates?__
