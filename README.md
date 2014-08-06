@@ -2,7 +2,7 @@
 
 ## Description
 
-This plugin allows to migrate sites between Piwik instances.
+This plugin allows to migrate websites between Piwik instances.
 
 ## Usage
 
