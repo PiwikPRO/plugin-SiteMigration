@@ -1,4 +1,4 @@
-# Piwik SiteMigrator Plugin
+# Piwik SiteMigration Plugin
 
 ## Description
 
