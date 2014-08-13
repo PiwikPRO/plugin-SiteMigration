@@ -64,13 +64,13 @@ install:
   - rm -rf plugins/$PLUGIN_NAME
   - mv ../$PLUGIN_NAME plugins
 
+  # make sure travis test scripts are always latest (so in older releases/branches, the latest scripts will still be used)
+  - git checkout master ./tests/travis ./plugins/CoreConsole
+
   # clone dependent repos
   - ./tests/travis/checkout_dependent_plugins.sh
 
 before_script:
-  # make sure travis test scripts are always latest (so in older releases/branches, the latest scripts will still be used)
-  - git checkout master ./tests/travis ./plugins/CoreConsole
-
   - ./tests/travis/configure_git.sh
 
   # print out mysql information
@@ -108,7 +108,7 @@ before_script:
   - ./tests/travis/prepare.sh
   - ./tests/travis/setup_webserver.sh
 
-  - export GENERATE_TRAVIS_YML_COMMAND='php ./console generate:travis-yml --plugin=SiteMigration --artifacts-pass=$ARTIFACTS_PASS --github-token=$GITHUB_USER_TOKEN'
+  - export GENERATE_TRAVIS_YML_COMMAND='php ./console generate:travis-yml --plugin=SiteMigration'
   - ./tests/travis/autoupdate_travis_yml.sh
 
   - cd tests/PHPUnit
