@@ -1,12 +1,20 @@
 <?php
+/**
+ * Piwik PRO - cloud hosting and enterprise analytics consultancy
+ * from the creators of Piwik.org
+ *
+ * @link http://piwik.pro
+ * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ *
+ */
 
 
-namespace Piwik\Plugins\SiteMigrator\Test;
+namespace Piwik\Plugins\SiteMigration\Test;
 
-use Piwik\Plugins\SiteMigrator\Helper\DBHelper;
+use Piwik\Plugins\SiteMigration\Helper\DBHelper;
 
 /**
- * @group SiteMigrator
+ * @group SiteMigration
  */
 class DBHelperTest extends \PHPUnit_Framework_TestCase
 {

@@ -1,10 +1,18 @@
 <?php
+/**
+ * Piwik PRO - cloud hosting and enterprise analytics consultancy
+ * from the creators of Piwik.org
+ *
+ * @link http://piwik.pro
+ * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ *
+ */
 
 
-namespace Piwik\Plugins\SiteMigrator\Migrator;
+namespace Piwik\Plugins\SiteMigration\Migrator;
 
-use Piwik\Plugins\SiteMigrator\Helper\DBHelper;
-use Piwik\Plugins\SiteMigrator\Model\IdMapCollection;
+use Piwik\Plugins\SiteMigration\Helper\DBHelper;
+use Piwik\Plugins\SiteMigration\Model\IdMapCollection;
 use Symfony\Component\Config\Definition\Exception\Exception;
 
 class ActionMigrator

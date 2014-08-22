@@ -1,16 +1,24 @@
 <?php
+/**
+ * Piwik PRO - cloud hosting and enterprise analytics consultancy
+ * from the creators of Piwik.org
+ *
+ * @link http://piwik.pro
+ * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ *
+ */
 
 
-namespace Piwik\Plugins\SiteMigrator\Test;
+namespace Piwik\Plugins\SiteMigration\Test;
 
 
-use Piwik\Plugins\SiteMigrator\Migrator\SiteConfigMigrator;
+use Piwik\Plugins\SiteMigration\Migrator\SiteConfigMigrator;
 
 /**
  * Class SiteConfigMigratorTest
- * @package Piwik\Plugins\SiteMigrator\Test
+ * @package Piwik\Plugins\SiteMigration\Test
  *
- * @group SiteMigrator
+ * @group SiteMigration
  */
 class SiteConfigMigratorTest extends \PHPUnit_Framework_TestCase
 {
@@ -54,11 +62,11 @@ class SiteConfigMigratorTest extends \PHPUnit_Framework_TestCase
 
     protected function resetSiteConfig()
     {
-        $this->siteMap         = $this->getMock('Piwik\Plugins\SiteMigrator\Model\IdMap', array('add', 'translate'));
-        $this->idMapCollection = $idMapCollection = $this->getMock('Piwik\Plugins\SiteMigrator\Model\IdMapCollection', array('getSiteMap'));;
+        $this->siteMap         = $this->getMock('Piwik\Plugins\SiteMigration\Model\IdMap', array('add', 'translate'));
+        $this->idMapCollection = $idMapCollection = $this->getMock('Piwik\Plugins\SiteMigration\Model\IdMapCollection', array('getSiteMap'));;
         $this->adapter         = $this->getMock('Zend_Db_Adapter_Pdo_Mysql', array('fetchRow', 'fetchAll'), array(), '', false);
         $this->fromDbHelper    = $this->getMock(
-            'Piwik\Plugins\SiteMigrator\Helper\DBHelper',
+            'Piwik\Plugins\SiteMigration\Helper\DBHelper',
             array('executeInsert', 'lastInsertId', 'getAdapter'),
             array(),
             '',
@@ -66,7 +74,7 @@ class SiteConfigMigratorTest extends \PHPUnit_Framework_TestCase
         );
 
         $this->toDbHelper     = $this->getMock(
-            'Piwik\Plugins\SiteMigrator\Helper\DBHelper',
+            'Piwik\Plugins\SiteMigration\Helper\DBHelper',
             array('executeInsert', 'lastInsertId', 'getAdapter'),
             array(),
             '',

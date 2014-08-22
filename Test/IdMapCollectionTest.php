@@ -1,14 +1,22 @@
 <?php
+/**
+ * Piwik PRO - cloud hosting and enterprise analytics consultancy
+ * from the creators of Piwik.org
+ *
+ * @link http://piwik.pro
+ * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ *
+ */
 
 
-namespace Piwik\Plugins\SiteMigrator\Test;
+namespace Piwik\Plugins\SiteMigration\Test;
 
 
-use Piwik\Plugins\SiteMigrator\Model\IdMap;
-use Piwik\Plugins\SiteMigrator\Model\IdMapCollection;
+use Piwik\Plugins\SiteMigration\Model\IdMap;
+use Piwik\Plugins\SiteMigration\Model\IdMapCollection;
 
 /**
- * @group SiteMigrator
+ * @group SiteMigration
  */
 class IdMapCollectionTest extends \PHPUnit_Framework_TestCase
 {

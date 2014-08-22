@@ -1,4 +1,4 @@
-# Piwik SiteMigrator Plugin
+# Piwik SiteMigration Plugin
 
 ## Description
 
@@ -7,19 +7,15 @@ This plugin allows to migrate sites between Piwik instances.
 ## Usage
 
 Migration can be started from CLI by typing
-
-`./console migrate:site idSite`
-
-There is only one argument: idSite.
+`./console migration:site idSite`
+There is only one argument: idSite. Before migrating data the command will ask for new database credentials. Please provide all necessary credentials to the destination database.
 
 Please run
-
-`./console migrate:site --help`
-
+`./console migration:site --help`
 To get a full list of options.
 
 __Usage:__
- migrate:site [--skip-archived] [--skip-raw] [-H|--host="..."] [-U|--username="..."] [-P|--password="..."] [-N|--dbname="..."] [--prefix="..."] [--port="..."] [-F|--date-from="..."] [-T|--date-to="..."] [-I|--new-id-site="..."] idSite
+ migration:site [--skip-archived] [--skip-raw] [-H|--host="..."] [-U|--username="..."] [-P|--password="..."] [-N|--dbname="..."] [--prefix="..."] [--port="..."] [-F|--date-from="..."] [-T|--date-to="..."] [-I|--new-id-site="..."] idSite
 
 __Arguments:__
  idSite                Site id
@@ -47,21 +43,28 @@ __Options:__
 
 ## FAQ
 
-__How can I migrate data between two dates?__
+__How can I migrate site data between two dates?__
 You can use command options: --date-from and --date-to
 
-__How can I migrate data to an existing page?__
+__How can I migrate site data to an existing page?__
 Please make sure that the config of the new site id is present and it is in sync with the config of the old file (custom vars, goals, etc).
 Please check also if the site log is empty (both raw and archive).
 
-If both above conditions are met run the migrate:site command with the =I|--new-site-id param - this will skip config migration and will go straightly to raw data log and archive migration.
+If both above conditions are met run the migrate:site command with the -I|--new-site-id param - this will skip config migration and will go straightly to raw data log and archive migration.
+
+__How can I skip migrating archived data?__
+Just add the "--skip-archived" option.
 
 ## Changelog
+
+__v0.1.1__
+- Changed license to free plugin
+- Changed name to SiteMigration
 
 __v0.1.0__
 - Initial release
 
+## Contributors
 
-## Support
+Created by [Piwik PRO](http://piwik.pro/)
 
-Please direct any feedback to contact@piwik.pro

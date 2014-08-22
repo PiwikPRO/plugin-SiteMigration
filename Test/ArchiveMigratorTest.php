@@ -1,15 +1,23 @@
 <?php
+/**
+ * Piwik PRO - cloud hosting and enterprise analytics consultancy
+ * from the creators of Piwik.org
+ *
+ * @link http://piwik.pro
+ * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ *
+ */
 
 
-namespace Piwik\Plugins\SiteMigrator\Test;
+namespace Piwik\Plugins\SiteMigration\Test;
 
-use Piwik\Plugins\SiteMigrator\Migrator\ArchiveMigrator;
+use Piwik\Plugins\SiteMigration\Migrator\ArchiveMigrator;
 
 /**
  * Class ArchiveMigratorTest
- * @package Piwik\Plugins\SiteMigrator\Test
+ * @package Piwik\Plugins\SiteMigration\Test
  *
- * @group SiteMigrator
+ * @group SiteMigration
  */
 class ArchiveMigratorTest extends \PHPUnit_Framework_TestCase
 {
@@ -59,9 +67,9 @@ class ArchiveMigratorTest extends \PHPUnit_Framework_TestCase
 
     protected function reset()
     {
-        $this->siteMap         = $this->getMock('Piwik\Plugins\SiteMigrator\Model\IdMap', array('add', 'translate'));
+        $this->siteMap         = $this->getMock('Piwik\Plugins\SiteMigration\Model\IdMap', array('add', 'translate'));
         $this->idMapCollection = $idMapCollection = $this->getMock(
-            'Piwik\Plugins\SiteMigrator\Model\IdMapCollection',
+            'Piwik\Plugins\SiteMigration\Model\IdMapCollection',
             array('getSiteMap', 'getActionMap')
         );
 
@@ -73,7 +81,7 @@ class ArchiveMigratorTest extends \PHPUnit_Framework_TestCase
             false
         );
         $this->fromDbHelper = $this->getMock(
-            'Piwik\Plugins\SiteMigrator\Helper\DBHelper',
+            'Piwik\Plugins\SiteMigration\Helper\DBHelper',
             array('executeInsert', 'lastInsertId', 'getAdapter', 'prefixTable'),
             array(),
             '',
@@ -81,7 +89,7 @@ class ArchiveMigratorTest extends \PHPUnit_Framework_TestCase
         );
 
         $this->toDbHelper = $this->getMock(
-            'Piwik\Plugins\SiteMigrator\Helper\DBHelper',
+            'Piwik\Plugins\SiteMigration\Helper\DBHelper',
             array('executeInsert', 'lastInsertId', 'getAdapter', 'prefixTable', 'acquireLock', 'releaseLock'),
             array(),
             '',

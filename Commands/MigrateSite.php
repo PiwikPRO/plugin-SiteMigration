@@ -1,32 +1,33 @@
 <?php
 /**
- * Piwik - Open source web analytics
+ * Piwik PRO - cloud hosting and enterprise analytics consultancy
+ * from the creators of Piwik.org
  *
- * @link http://piwik.org
+ * @link http://piwik.pro
  * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  *
  */
 
-namespace Piwik\Plugins\SiteMigrator\Commands;
+namespace Piwik\Plugins\SiteMigration\Commands;
 
 use Piwik\Common;
 use Piwik\Db;
 use Piwik\Piwik;
 use Piwik\Plugin\ConsoleCommand;
-use Piwik\Plugins\SiteMigrator\Helper\DBHelper;
-use Piwik\Plugins\SiteMigrator\Migrator\ActionMigrator;
-use Piwik\Plugins\SiteMigrator\Migrator\ArchiveMigrator;
-use Piwik\Plugins\SiteMigrator\Migrator\ConversionMigrator;
-use Piwik\Plugins\SiteMigrator\Migrator\LinkVisitActionMigrator;
-use Piwik\Plugins\SiteMigrator\Migrator\VisitMigrator;
-use Piwik\Plugins\SiteMigrator\Model\IdMapCollection;
+use Piwik\Plugins\SiteMigration\Helper\DBHelper;
+use Piwik\Plugins\SiteMigration\Migrator\ActionMigrator;
+use Piwik\Plugins\SiteMigration\Migrator\ArchiveMigrator;
+use Piwik\Plugins\SiteMigration\Migrator\ConversionMigrator;
+use Piwik\Plugins\SiteMigration\Migrator\LinkVisitActionMigrator;
+use Piwik\Plugins\SiteMigration\Migrator\VisitMigrator;
+use Piwik\Plugins\SiteMigration\Model\IdMapCollection;
 use Piwik\Site;
 use Symfony\Component\Console\Helper\DialogHelper;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Piwik\Plugins\SiteMigrator\Migrator\SiteConfigMigrator;
+use Piwik\Plugins\SiteMigration\Migrator\SiteConfigMigrator;
 
 
 class MigrateSite extends ConsoleCommand
@@ -59,7 +60,7 @@ class MigrateSite extends ConsoleCommand
 
     protected function configure()
     {
-        $this->setName('migrate:site');
+        $this->setName('migration:site');
         $this->setDescription('Migrate site between Piwik instances');
         $this->addArgument('idSite', InputArgument::REQUIRED, 'Site id');
 
@@ -299,7 +300,10 @@ class MigrateSite extends ConsoleCommand
             $config['password'] = $this->askAndValidate(
                 $output,
                 'Please provide the destination database password',
-                $dummyValidator
+                $dummyValidator,
+                false,
+                null,
+                true
             );
         } else {
             $config['password'] = $input->getOption('password');
@@ -324,19 +328,31 @@ class MigrateSite extends ConsoleCommand
         $question,
         callable $validator,
         $attempts = false,
-        $default = null
+        $default  = null,
+        $hidden   = false
     ) {
         /**
          * @var $dialog DialogHelper
          */
-        $dialog = $this->getHelperSet()->get('dialog');
+        $dialog   = $this->getHelperSet()->get('dialog');
+        $question = '<question>' . $question . (($default) ? " [$default]" : '') . ':</question> ';
 
-        return $dialog->askAndValidate(
-            $output,
-            '<question>' . $question . (($default) ? " [$default]" : '') . ':</question> ',
-            $validator,
-            $attempts,
-            $default
-        );
+        if (!$hidden) {
+            return $dialog->askAndValidate(
+                $output,
+                $question,
+                $validator,
+                $attempts,
+                $default
+            );
+        } else {
+            return $dialog->askHiddenResponseAndValidate(
+                $output,
+                $question,
+                $validator,
+                $attempts,
+                $default
+            );
+        }
     }
 }

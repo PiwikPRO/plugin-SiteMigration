@@ -1,7 +1,15 @@
 <?php
+/**
+ * Piwik PRO - cloud hosting and enterprise analytics consultancy
+ * from the creators of Piwik.org
+ *
+ * @link http://piwik.pro
+ * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ *
+ */
 
 
-namespace Piwik\Plugins\SiteMigrator\Model;
+namespace Piwik\Plugins\SiteMigration\Model;
 
 
 class IdMapCollection
@@ -74,7 +82,7 @@ class IdMapCollection
     }
 
     /**
-     * @param \Piwik\Plugins\SiteMigrator\Model\IdMap $visitMap
+     * @param \Piwik\Plugins\SiteMigration\Model\IdMap $visitMap
      */
     public function setVisitMap($visitMap)
     {
@@ -82,7 +90,7 @@ class IdMapCollection
     }
 
     /**
-     * @return \Piwik\Plugins\SiteMigrator\Model\IdMap
+     * @return \Piwik\Plugins\SiteMigration\Model\IdMap
      */
     public function getVisitMap()
     {
@@ -90,7 +98,7 @@ class IdMapCollection
     }
 
     /**
-     * @param \Piwik\Plugins\SiteMigrator\Model\IdMap $visitActionMap
+     * @param \Piwik\Plugins\SiteMigration\Model\IdMap $visitActionMap
      */
     public function setVisitActionMap($visitActionMap)
     {
@@ -98,7 +106,7 @@ class IdMapCollection
     }
 
     /**
-     * @return \Piwik\Plugins\SiteMigrator\Model\IdMap
+     * @return \Piwik\Plugins\SiteMigration\Model\IdMap
      */
     public function getVisitActionMap()
     {

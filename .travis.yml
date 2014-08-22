@@ -7,7 +7,7 @@ php:
 
 env:
   global:
-    - PLUGIN_NAME=SiteMigrator
+    - PLUGIN_NAME=SiteMigration
   matrix:
     - TEST_SUITE=PluginTests MYSQL_ADAPTER=PDO_MYSQL
 

@@ -1,16 +1,24 @@
 <?php
+/**
+ * Piwik PRO - cloud hosting and enterprise analytics consultancy
+ * from the creators of Piwik.org
+ *
+ * @link http://piwik.pro
+ * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ *
+ */
 
 
-namespace Piwik\Plugins\SiteMigrator\Test;
+namespace Piwik\Plugins\SiteMigration\Test;
 
-use Piwik\Plugins\SiteMigrator\Helper\DBHelper;
-use Piwik\Plugins\SiteMigrator\Migrator\VisitMigrator;
+use Piwik\Plugins\SiteMigration\Helper\DBHelper;
+use Piwik\Plugins\SiteMigration\Migrator\VisitMigrator;
 
 /**
  * Class VisitMigratorTest
- * @package Piwik\Plugins\SiteMigrator\Test
+ * @package Piwik\Plugins\SiteMigration\Test
  *
- * @group SiteMigrator
+ * @group SiteMigration
  */
 class VisitMigratorTest extends \PHPUnit_Framework_TestCase
 {
@@ -77,12 +85,12 @@ class VisitMigratorTest extends \PHPUnit_Framework_TestCase
 
     protected function reset()
     {
-        $this->siteMap         = $this->getMock('Piwik\Plugins\SiteMigrator\Model\IdMap', array('add', 'translate'));
-        $this->visitMap        = $this->getMock('Piwik\Plugins\SiteMigrator\Model\IdMap', array('add', 'translate'));
-        $this->visitActionMap  = $this->getMock('Piwik\Plugins\SiteMigrator\Model\IdMap', array('add', 'translate'));
-        $this->actionMap       = $this->getMock('Piwik\Plugins\SiteMigrator\Model\IdMap', array('add', 'translate'));
+        $this->siteMap         = $this->getMock('Piwik\Plugins\SiteMigration\Model\IdMap', array('add', 'translate'));
+        $this->visitMap        = $this->getMock('Piwik\Plugins\SiteMigration\Model\IdMap', array('add', 'translate'));
+        $this->visitActionMap  = $this->getMock('Piwik\Plugins\SiteMigration\Model\IdMap', array('add', 'translate'));
+        $this->actionMap       = $this->getMock('Piwik\Plugins\SiteMigration\Model\IdMap', array('add', 'translate'));
         $this->idMapCollection = $idMapCollection = $this->getMock(
-            'Piwik\Plugins\SiteMigrator\Model\IdMapCollection',
+            'Piwik\Plugins\SiteMigration\Model\IdMapCollection',
             array('getSiteMap', 'getVisitMap', 'getVisitActionMap', 'getActionMap')
         );
 
@@ -94,7 +102,7 @@ class VisitMigratorTest extends \PHPUnit_Framework_TestCase
             false
         );
         $this->fromDbHelper = $this->getMock(
-            'Piwik\Plugins\SiteMigrator\Helper\DBHelper',
+            'Piwik\Plugins\SiteMigration\Helper\DBHelper',
             array('executeInsert', 'lastInsertId', 'getAdapter', 'prefixTable'),
             array(),
             '',
@@ -102,7 +110,7 @@ class VisitMigratorTest extends \PHPUnit_Framework_TestCase
         );
 
         $this->toDbHelper = $this->getMock(
-            'Piwik\Plugins\SiteMigrator\Helper\DBHelper',
+            'Piwik\Plugins\SiteMigration\Helper\DBHelper',
             array('executeInsert', 'lastInsertId', 'getAdapter', 'prefixTable', 'acquireLock', 'releaseLock'),
             array(),
             '',
@@ -110,7 +118,7 @@ class VisitMigratorTest extends \PHPUnit_Framework_TestCase
         );
 
         $this->actionMigrator = $this->getMock(
-            'Piwik\Plugins\SiteMigrator\Migrator\ActionMigrator',
+            'Piwik\Plugins\SiteMigration\Migrator\ActionMigrator',
             array(),
             array(),
             '',

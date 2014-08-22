@@ -1,10 +1,10 @@
 {
-    "name": "SiteMigrator",
+    "name": "SiteMigration",
     "version": "0.1.0",
-    "description": "Migrate site and site data between piwik installations",
+    "description": "Migrate site and site data between Piwik installations",
     "theme": false,
-    "license": "Paid plugin",
-    "license_page": "http://piwik.pro/contact",
+    "license": "GPL v3+",
+    "license_page": "http://www.gnu.org/licenses/gpl.html",
     "authors": [
         {
             "name": "Piwik PRO",
