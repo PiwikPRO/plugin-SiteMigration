@@ -2,7 +2,9 @@
 
 ## Description
 
-This plugin allows to migrate sites between Piwik instances.
+Migrate websites and website data between two Piwik installations. 
+
+[![Build Status](https://magnum.travis-ci.com/PiwikPRO/plugin-SiteMigration.svg?token=mhqCmy1K4zUjCiYpLN8c&branch=master)](https://magnum.travis-ci.com/PiwikPRO/plugin-SiteMigration)
 
 ## Usage
 
@@ -14,6 +16,7 @@ Please run
 `./console migration:site --help`
 To get a full list of options.
 
+```
 __Usage:__
  migration:site [--skip-archived] [--skip-raw] [-H|--host="..."] [-U|--username="..."] [-P|--password="..."] [-N|--dbname="..."] [--prefix="..."] [--port="..."] [-F|--date-from="..."] [-T|--date-to="..."] [-I|--new-id-site="..."] idSite
 
@@ -40,7 +43,7 @@ __Options:__
  --no-ansi             Disable ANSI output.
  --no-interaction (-n) Do not ask any interactive question.
  --piwik-domain        Piwik URL (protocol and domain) eg. "http://piwik.example.org"
-
+```
 ## FAQ
 
 __How can I migrate site data between two dates?__

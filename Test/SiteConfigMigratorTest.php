@@ -104,8 +104,8 @@ class SiteConfigMigratorTest extends \PHPUnit_Framework_TestCase
     public function test_migrateSiteGoals()
     {
         $goals = array(
-            ['idsite' => 1, 'idgoal' => 1, 'name' => 'test goal 1'],
-            ['idsite' => 1, 'idgoal' => 2, 'name' => 'test goal 2'],
+            array('idsite' => 1, 'idgoal' => 1, 'name' => 'test goal 1'),
+            array('idsite' => 1, 'idgoal' => 2, 'name' => 'test goal 2'),
         );
 
         $this->adapter->expects($this->once())->method('fetchAll')->will($this->returnValue($goals));
@@ -120,8 +120,8 @@ class SiteConfigMigratorTest extends \PHPUnit_Framework_TestCase
     public function test_migrateSiteURLs()
     {
         $urls = array(
-            ['idsite' => 1, 'url' => 'http://url1.com'],
-            ['idsite' => 1, 'url' => 'http://url2.com'],
+            array('idsite' => 1, 'url' => 'http://url1.com'),
+            array('idsite' => 1, 'url' => 'http://url2.com'),
         );
 
         $this->adapter->expects($this->once())->method('fetchAll')->will($this->returnValue($urls));
