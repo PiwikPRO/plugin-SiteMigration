@@ -12,6 +12,8 @@
 namespace Piwik\Plugins\SiteMigration\Model;
 
 
+use Piwik\Plugins\SiteMigration\Exception\MissingIDTranslationException;
+
 class IdMap
 {
 
@@ -33,7 +35,7 @@ class IdMap
     /**
      * @param $oldId
      * @return mixed
-     * @throws \InvalidArgumentException If no match found
+     * @throws MissingIDTranslationException If no match found
      */
     public function translate($oldId)
     {
@@ -42,7 +44,7 @@ class IdMap
             return $this->ids[$oldId];
         }
 
-        throw new \InvalidArgumentException('Value for key ' . $oldId . ' not found');
+        throw new MissingIDTranslationException('Value for key ' . $oldId . ' not found');
     }
 
 

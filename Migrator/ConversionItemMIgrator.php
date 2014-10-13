@@ -7,47 +7,55 @@ namespace Piwik\Plugins\SiteMigration\Migrator;
 use Piwik\Plugins\SiteMigration\Helper\DBHelper;
 use Piwik\Plugins\SiteMigration\Helper\GCHelper;
 
-class LinkVisitActionMigrator extends Migrator
+class ConversionItemMigrator extends Migrator
 {
 
     /**
-     * @var Migrator
+     * @var SiteMigrator
      */
     protected $siteMigrator;
 
     /**
-     * @var Migrator
+     * @var VisitMigrator
      */
     protected $visitMigrator;
 
     /**
-     * @var Migrator
+     * @var LinkVisitActionMigrator
      */
     protected $actionMigrator;
 
+    protected $actionsToTranslate = array(
+        'idaction_sku',
+        'idaction_name',
+        'idaction_category',
+        'idaction_category2',
+        'idaction_category3',
+        'idaction_category4',
+        'idaction_category5'
+    );
+
     public function __construct(DBHelper $toDbHelper, GCHelper $gcHelper, Migrator $siteMigrator, Migrator $visitMigrator, ActionMigrator $actionMigrator)
     {
-        $this->siteMigrator   = $siteMigrator;
-        $this->visitMigrator  = $visitMigrator;
-        $this->actionMigrator = $actionMigrator;
+        $this->siteMigrator            = $siteMigrator;
+        $this->visitMigrator           = $visitMigrator;
+        $this->actionMigrator          = $actionMigrator;
 
         parent::__construct($toDbHelper, $gcHelper);
     }
 
-
     protected function translateRow(&$row)
     {
-        unset($row['idlink_va']);
-
         $row['idsite']  = $this->siteMigrator->getNewId($row['idsite']);
         $row['idvisit'] = $this->visitMigrator->getNewId($row['idvisit']);
 
-        $row['idaction_url']            = $this->actionMigrator->getNewId($row['idaction_url']);
-        $row['idaction_url_ref']        = $this->actionMigrator->getNewId($row['idaction_url_ref']);
-        $row['idaction_name']           = $this->actionMigrator->getNewId($row['idaction_name']);
-        $row['idaction_name_ref']       = $this->actionMigrator->getNewId($row['idaction_name_ref']);
-        $row['idaction_event_category'] = $this->actionMigrator->getNewId($row['idaction_event_category']);
-        $row['idaction_event_action']   = $this->actionMigrator->getNewId($row['idaction_event_action']);
+        foreach ($this->actionsToTranslate as $translationKey) {
+            if ($row[$translationKey] == 0) {
+                continue;
+            }
+
+            $row[$translationKey] = $this->actionMigrator->getNewId($row[$translationKey]);
+        }
     }
 
     /**
@@ -55,7 +63,7 @@ class LinkVisitActionMigrator extends Migrator
      */
     protected function getTableName()
     {
-        return 'log_link_visit_action';
+        return 'log_conversion_item';
     }
 
     /**
@@ -65,7 +73,6 @@ class LinkVisitActionMigrator extends Migrator
      */
     protected function getIdFromRow(&$row)
     {
-        return $row['idlink_va'];
+        return null;
     }
-
 }

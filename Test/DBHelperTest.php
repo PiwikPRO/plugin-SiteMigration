@@ -46,7 +46,7 @@ class DBHelperTest extends \PHPUnit_Framework_TestCase
             '',
             false
         );
-        $this->config  = array(
+        $this->config = array(
             'dbname'        => 'piwik__test',
             'host'          => 'example.com',
             'username'      => 'example',
@@ -70,7 +70,7 @@ class DBHelperTest extends \PHPUnit_Framework_TestCase
     public function test_getInsertSQL()
     {
         $values = array('foo' => 'bar', 'dummy' => 'dummy');
-        $sql    = "INSERT INTO piwik_table(`foo`, `dummy`) VALUES ('bar', 'dummy')";
+        $sql = "INSERT INTO piwik_table(`foo`, `dummy`) VALUES ('bar', 'dummy')";
 
         $this->adapter->expects($this->exactly(2))->method('quote')->will(
             $this->returnCallback(
@@ -121,5 +121,29 @@ class DBHelperTest extends \PHPUnit_Framework_TestCase
         $this->adapter->expects($this->once())->method('lastInsertId')->with('table', null)->will($this->returnValue(2));
 
         $this->assertEquals(2, $this->dbHelper->lastInsertId('table'));
+    }
+
+    /**
+     * @test
+     */
+    public function test_it_flushes_correctly()
+    {
+        $this->dbHelper->insert('test1', array('k1' => 'v1', 'k2' => 2));
+        $this->dbHelper->insert('test1', array('k1' => 'v3', 'k2' => 4));
+        $this->dbHelper->insert('test2', array('k3' => 'v5', 'k4' => 6));
+
+        $this->adapter->expects($this->exactly(6))->method('quote')->willReturnCallback(function ($arg) {
+            return "'" . $arg . "'";
+        });
+        $this->adapter->expects($this->exactly(2))->method('query')->withConsecutive(
+            array(
+                "INSERT INTO piwik_test1 (`k1`, `k2`) VALUES ('v1', '2'), ('v3', '4')"
+            ),
+            array(
+                "INSERT INTO piwik_test2 (`k3`, `k4`) VALUES ('v5', '6')"
+            )
+        );
+
+        $this->dbHelper->flushInserts();
     }
 }

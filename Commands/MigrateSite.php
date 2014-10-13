@@ -14,11 +14,17 @@ use Piwik\Common;
 use Piwik\Db;
 use Piwik\Piwik;
 use Piwik\Plugin\ConsoleCommand;
+use Piwik\Plugins\SiteMigration\DataProvider\BatchProvider;
 use Piwik\Plugins\SiteMigration\Helper\DBHelper;
+use Piwik\Plugins\SiteMigration\Helper\GCHelper;
 use Piwik\Plugins\SiteMigration\Migrator\ActionMigrator;
 use Piwik\Plugins\SiteMigration\Migrator\ArchiveMigrator;
+use Piwik\Plugins\SiteMigration\Migrator\ConversionItemMigrator;
 use Piwik\Plugins\SiteMigration\Migrator\ConversionMigrator;
 use Piwik\Plugins\SiteMigration\Migrator\LinkVisitActionMigrator;
+use Piwik\Plugins\SiteMigration\Migrator\SiteGoalMigrator;
+use Piwik\Plugins\SiteMigration\Migrator\SiteMigrator;
+use Piwik\Plugins\SiteMigration\Migrator\SiteUrlMigrator;
 use Piwik\Plugins\SiteMigration\Migrator\VisitMigrator;
 use Piwik\Plugins\SiteMigration\Model\IdMapCollection;
 use Piwik\Site;
@@ -67,24 +73,24 @@ class MigrateSite extends ConsoleCommand
         /**
          * Migration options
          */
-        $this->addOption('skip-archived', null, InputOption::VALUE_NONE, 'Skip migration of archived data');
-        $this->addOption('skip-raw', null, InputOption::VALUE_NONE, 'Skip migration of raw data');
+        $this->addOption('skip-archive-data', null, InputOption::VALUE_NONE, 'Skip migration of archived data');
+        $this->addOption('skip-log-data', null, InputOption::VALUE_NONE, 'Skip migration of log data');
 
         /**
          * Database options
          */
-        $this->addOption('host', 'H', InputOption::VALUE_REQUIRED, 'Destination database host');
-        $this->addOption('username', 'U', InputOption::VALUE_REQUIRED, 'Destination database username');
-        $this->addOption('password', 'P', InputOption::VALUE_REQUIRED, 'Destination database password');
-        $this->addOption('dbname', 'N', InputOption::VALUE_REQUIRED, 'Destination database name');
+        $this->addOption('db-host', 'H', InputOption::VALUE_REQUIRED, 'Destination database host');
+        $this->addOption('db-username', 'U', InputOption::VALUE_REQUIRED, 'Destination database username');
+        $this->addOption('db-password', 'P', InputOption::VALUE_REQUIRED, 'Destination database password');
+        $this->addOption('db-name', 'N', InputOption::VALUE_REQUIRED, 'Destination database name');
         $this->addOption(
-            'prefix',
+            'db-prefix',
             null,
             InputOption::VALUE_REQUIRED,
             'Destination database table prefix',
             Common::prefixTable('')
         );
-        $this->addOption('port', null, InputOption::VALUE_REQUIRED, 'Destination database port', '3306');
+        $this->addOption('db-port', null, InputOption::VALUE_REQUIRED, 'Destination database port', '3306');
 
         /**
          * Visit query options
@@ -104,15 +110,16 @@ class MigrateSite extends ConsoleCommand
             'new-id-site',
             'I',
             InputOption::VALUE_REQUIRED,
-            'New site id, if provided site config will not be migrated, raw and archive data will be copied into existing site'
+            'New site id, if provided site config will not be migrated, log and archive data will be copied into existing site'
         );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        /**
+         * Set memory limit to off
+         */
         @ini_set('memory_limit', -1);
-        gc_enable();
-
         Piwik::setUserHasSuperUserAccess();
 
         $idSite       = $input->getArgument('idSite');
@@ -136,22 +143,90 @@ class MigrateSite extends ConsoleCommand
 
         $this->toDb->beginTransaction();
 
+        $gcHelper = GCHelper::getInstance();
+
         $output->writeln(sprintf('<info>Migrating site: %s - %s</info>', $idSite, $site['name']));
 
-        $this->migrateSettings($input, $output, $idSite);
+        $output->writeln('<info>Migrating settings...</info>');
+        $output->writeln('<comment> - Main settings</comment>');
 
-        if (!$input->getOption('skip-raw')) {
-            $this->migrateRawData(
-                $input,
-                $output,
-                $idSite
-            );
+        $siteMigrator = new SiteMigrator($this->toDbHelper, $gcHelper);
+        $siteMigrator->migrate(
+            new BatchProvider(
+                'SELECT * FROM ' . $this->fromDbHelper->prefixTable('site') . ' WHERE idsite = ' . $idSite,
+                $this->fromDbHelper,
+                $gcHelper,
+                10
+            )
+        );
+
+        $output->writeln('<comment> - Goals</comment>');
+
+        $siteGoalMigrator = new SiteGoalMigrator($this->toDbHelper, $gcHelper, $siteMigrator);
+        $siteGoalMigrator->migrate(
+            new BatchProvider(
+                'SELECT * FROM ' . $this->fromDbHelper->prefixTable('goal') . ' WHERE idsite = ' . $idSite,
+                $this->fromDbHelper,
+                $gcHelper,
+                100
+            )
+        );
+
+        $output->writeln('<comment> - Site url</comment>');
+
+        $siteUrlMigrator = new SiteUrlMigrator($this->toDbHelper, $gcHelper, $siteMigrator);
+        $siteUrlMigrator->migrate(
+            new BatchProvider(
+                'SELECT * FROM ' . $this->fromDbHelper->prefixTable('site_url') . ' WHERE idsite = ' . $idSite,
+                $this->fromDbHelper,
+                $gcHelper,
+                100
+            )
+        );
+
+        $output->writeln('<info>Load existing actions... </info>');
+        $actionMigrator  = new ActionMigrator($this->fromDbHelper, $this->toDbHelper);
+        $actionMigrator->loadExistingActions();
+
+        $output->writeln('<info>Migrating visits... </info>');
+        $visitorMigrator = new VisitMigrator($this->toDbHelper, $gcHelper, $siteMigrator, $actionMigrator);
+        $visitorMigrator->migrate(
+            new BatchProvider(
+                'SELECT * FROM ' . $this->fromDbHelper->prefixTable('log_visit') . ' WHERE idsite = ' . $idSite,
+                $this->fromDbHelper,
+                $gcHelper,
+                100
+            )
+        );
+
+        $output->writeln('<info>Migrating visit actions... </info>');
+        $visitActionMigrator = new LinkVisitActionMigrator($this->toDbHelper, $gcHelper, $siteMigrator, $visitorMigrator, $actionMigrator);
+        $baseQuery           = "SELECT * FROM " . $this->fromDbHelper->prefixTable('log_link_visit_action') . ' WHERE idvisit IN ';
+        $queries             = array();
+        $visitIdRanges       = $visitorMigrator->getIdRanges();
+
+        foreach ($visitIdRanges as $range) {
+            $queries[] = $baseQuery . ' (' . implode(', ', $range) . ')';
+        }
+        $visitActionMigrator->migrate(new BatchProvider($queries, $this->fromDbHelper, $gcHelper));
+
+        $output->writeln('<info>Migrating conversions with conversion items... </info>');
+
+        $conversionMigrator      = new ConversionMigrator($this->toDbHelper, $gcHelper, $siteMigrator, $visitorMigrator, $actionMigrator, $visitActionMigrator);
+        $conversionItemMigrator  = new ConversionItemMigrator($this->toDbHelper, $gcHelper, $siteMigrator, $visitorMigrator, $actionMigrator);
+        $baseConversionQuery     = "SELECT * FROM " . $this->fromDbHelper->prefixTable('log_conversion') . ' WHERE idvisit IN ';
+        $baseConversionItemQuery = "SELECT * FROM " . $this->fromDbHelper->prefixTable('log_conversion_item') . ' WHERE idvisit IN ';
+        $conversionQueries       = array();
+        $conversionItemQueries   = array();
+        $visitIdRanges           = $visitorMigrator->getIdRanges();
+
+        foreach ($visitIdRanges as $range) {
+            $conversionQueries[]     = $baseConversionQuery . ' (' . implode(', ', $range) . ')';
+            $conversionItemQueries[] = $baseConversionItemQuery . ' (' . implode(', ', $range) . ')';
         }
 
-        if (!$input->getOption('skip-archived')) {
-            $this->migrateArchives($input, $output, $idSite);
-        }
-
+        $conversionMigrator->migrate(new BatchProvider($conversionQueries, $this->fromDbHelper, $gcHelper));
+        $conversionItemMigrator->migrate(new BatchProvider($conversionItemQueries, $this->fromDbHelper, $gcHelper));
 
         $output->writeln('<info>Closing transaction</info>');
         $this->toDb->commit();
@@ -166,30 +241,7 @@ class MigrateSite extends ConsoleCommand
     }
 
 
-    protected function migrateSettings(
-        InputInterface $input,
-        OutputInterface $output,
-        $idSite
-    ) {
 
-        if ($newSiteId = $input->getOption('new-id-site')) {
-            $this->idMapCollection->getSiteMap()->add($idSite, $newSiteId);
-            return;
-        }
-
-        $siteConfigMigrator = new SiteConfigMigrator($this->fromDbHelper, $this->toDbHelper, $this->idMapCollection);
-        $output->writeln('<info>Migrating settings...</info>');
-        $output->writeln('<comment> - Main settings</comment>');
-        $siteConfigMigrator->migrateSiteConfig($idSite);
-
-        $output->writeln('<comment> - Goals</comment>');
-        $siteConfigMigrator->migrateSiteGoals($idSite);
-
-        $output->writeln('<comment> - Site url</comment>');
-        $siteConfigMigrator->migrateSiteURLs($idSite);
-
-        unset($siteConfigMigrator);
-    }
 
     protected function getSite($idSite)
     {
@@ -201,50 +253,6 @@ class MigrateSite extends ConsoleCommand
             "SELECT * FROM " . Common::prefixTable("site") . " WHERE idsite = ?",
             $idSite
         );
-    }
-
-    protected function migrateRawData(
-        InputInterface $input,
-        OutputInterface $output,
-        $idSite
-    ) {
-        $actionMigrator      = new ActionMigrator($this->fromDbHelper, $this->toDbHelper, $this->idMapCollection);
-        $visitMigrator       = new VisitMigrator($this->fromDbHelper, $this->toDbHelper, $this->idMapCollection, $actionMigrator);
-        $visitActionMigrator = new LinkVisitActionMigrator($this->fromDbHelper, $this->toDbHelper, $this->idMapCollection, $actionMigrator);
-        $conversionMigrator  = new ConversionMigrator($this->fromDbHelper, $this->toDbHelper, $this->idMapCollection, $actionMigrator);
-
-        if ($dateFrom = $input->getOption('date-from')) {
-            $dateFrom = new \DateTime($dateFrom);
-            $visitMigrator->andWhere('visit_last_action_time', $dateFrom->format('Y-m-d'), '>=');
-        }
-        if ($dateTo = $input->getOption('date-to')) {
-            $dateTo = new \DateTime($dateTo);
-            $visitMigrator->andWhere('visit_last_action_time', $dateTo->format('Y-m-d'), '<=');
-        }
-
-        $output->writeln('<info>Migrating raw data... </info>');
-        $output->writeln('<comment> - Load existing actions</comment>');
-        $actionMigrator->loadExistingActions();
-
-        $output->writeln('<comment> - Visit</comment>');
-        $visitCount = $visitMigrator->getVisitCount($idSite);
-
-        if (!$visitCount) {
-            $output->writeln('<error>No visits found</error>');
-            exit;
-        }
-        $output->writeln("\tMigrating " . $visitCount . ' visits');
-
-        $visitMigrator->migrateVisits($idSite);
-
-        $output->writeln('<comment> - Link visit - action</comment>');
-        $visitActionMigrator->migrateVisitActions($idSite);
-
-        $output->writeln('<comment> - Conversion</comment>');
-        $conversionMigrator->migrateConversions($idSite);
-
-        $output->writeln('<comment> - Conversion item</comment>');
-        $conversionMigrator->migrateConversionItems($idSite);
     }
 
     protected function migrateArchives(InputInterface $input, OutputInterface $output, $idSite)
@@ -274,7 +282,7 @@ class MigrateSite extends ConsoleCommand
         };
 
 
-        if (!$input->getOption('host')) {
+        if (!$input->getOption('db-host')) {
             $config['host'] = $this->askAndValidate(
                 $output,
                 'Please provide the destination database host',
@@ -283,20 +291,20 @@ class MigrateSite extends ConsoleCommand
                 'localhost'
             );
         } else {
-            $config['host'] = $input->getOption('host');
+            $config['host'] = $input->getOption('db-host');
         }
 
-        if (!$input->getOption('username')) {
+        if (!$input->getOption('db-username')) {
             $config['username'] = $this->askAndValidate(
                 $output,
                 'Please provide the destination database username',
                 $notNullValidator
             );
         } else {
-            $config['username'] = $input->getOption('username');
+            $config['username'] = $input->getOption('db-username');
         }
 
-        if (!$input->getOption('password')) {
+        if (!$input->getOption('db-password')) {
             $config['password'] = $this->askAndValidate(
                 $output,
                 'Please provide the destination database password',
@@ -306,21 +314,21 @@ class MigrateSite extends ConsoleCommand
                 true
             );
         } else {
-            $config['password'] = $input->getOption('password');
+            $config['password'] = $input->getOption('db-password');
         }
 
-        if (!$input->getOption('dbname')) {
+        if (!$input->getOption('db-name')) {
             $config['dbname'] = $this->askAndValidate(
                 $output,
                 'Please provide the destination database name',
                 $notNullValidator
             );
         } else {
-            $config['dbname'] = $input->getOption('dbname');
+            $config['dbname'] = $input->getOption('db-name');
         }
 
-        $config['port']          = $input->getOption('port');
-        $config['tables_prefix'] = $input->getOption('prefix');
+        $config['port']          = $input->getOption('db-port');
+        $config['tables_prefix'] = $input->getOption('db-prefix');
     }
 
     protected function askAndValidate(
@@ -328,9 +336,10 @@ class MigrateSite extends ConsoleCommand
         $question,
         callable $validator,
         $attempts = false,
-        $default  = null,
-        $hidden   = false
-    ) {
+        $default = null,
+        $hidden = false
+    )
+    {
         /**
          * @var $dialog DialogHelper
          */

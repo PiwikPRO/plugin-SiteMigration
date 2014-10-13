@@ -11,6 +11,7 @@
 
 namespace Piwik\Plugins\SiteMigration\Migrator;
 
+use Piwik\Plugins\SiteMigration\Exception\MissingIDTranslationException;
 use Piwik\Plugins\SiteMigration\Helper\DBHelper;
 use Piwik\Plugins\SiteMigration\Model\IdMapCollection;
 use Symfony\Component\Config\Definition\Exception\Exception;
@@ -21,37 +22,33 @@ class ActionMigrator
 
     protected $toDbHelper;
 
-    protected $idMapCollection;
+    protected $existingActions = array();
 
-    protected $existingActions;
+    protected $idMap = array();
 
     public function __construct(
         DBHelper $fromDb,
-        DBHelper $toDb,
-        IdMapCollection $idMapCollection
-    ) {
-        $this->fromDbHelper = $fromDb;
-        $this->toDbHelper = $toDb;
-        $this->idMapCollection = $idMapCollection;
-        $this->existingActions = array();
+        DBHelper $toDb
+    )
+    {
+        $this->fromDbHelper    = $fromDb;
+        $this->toDbHelper      = $toDb;
     }
 
     protected function processAction($action)
     {
         if (array_key_exists($action['type'], $this->existingActions)
-            && array_key_exists($action['hash'],$this->existingActions[$action['type']])
+            && array_key_exists($action['hash'], $this->existingActions[$action['type']])
         ) {
-            $this->idMapCollection->getActionMap()->add(
-                $action['idaction'],
-                $this->existingActions[$action['type']][$action['hash']]
-            );
+            $this->idMap[$action['idaction']] = $this->existingActions[$action['type']][$action['hash']];
+
             return;
         }
 
         $idAction = $action['idaction'];
         unset($action['idaction']);
         $this->toDbHelper->executeInsert('log_action', $action);
-        $this->idMapCollection->getActionMap()->add($idAction, $this->toDbHelper->lastInsertId());
+        $this->idMap[$idAction] = $this->toDbHelper->lastInsertId();
         unset($action);
     }
 
@@ -67,8 +64,6 @@ class ActionMigrator
         while ($action = $query->fetch()) {
             $this->addExistingAction($action);
         }
-
-        return true;
     }
 
     public function addExistingAction($action)
@@ -82,12 +77,9 @@ class ActionMigrator
 
     public function ensureActionIsMigrated($idAction)
     {
-
-        try {
-            $this->idMapCollection->getActionMap()->translate($idAction);
-
+        if (array_key_exists($idAction, $this->idMap)) {
             return true;
-        } catch (\InvalidArgumentException $e) {
+        } else {
             $action = $this->fromDbHelper->getAdapter()->fetchRow(
                 'SELECT * FROM ' . $this->fromDbHelper->prefixTable('log_action') . ' WHERE idaction = ?',
                 array($idAction)
@@ -101,6 +93,16 @@ class ActionMigrator
         }
 
         return false;
+    }
+
+    public function getNewId($idAction)
+    {
+        if ($this->ensureActionIsMigrated($idAction)) {
+            return $this->idMap[$idAction];
+        } else {
+            return 0;
+        }
+
     }
 
     /**
@@ -117,6 +119,15 @@ class ActionMigrator
     public function getExistingActions()
     {
         return $this->existingActions;
+    }
+
+    /**
+     * @param int $oldId
+     * @param int $newId
+     */
+    public function addNewId($oldId, $newId)
+    {
+        $this->idMap[$oldId] = $newId;
     }
 
 } 
