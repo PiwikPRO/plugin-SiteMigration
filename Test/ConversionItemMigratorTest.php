@@ -12,7 +12,6 @@
 namespace Piwik\Plugins\SiteMigration\Test;
 
 use Piwik\Plugins\SiteMigration\Migrator\ConversionItemMigrator;
-use Piwik\Plugins\SiteMigration\Migrator\ConversionMigrator;
 
 /**
  * Class ConversionItemMigratorTest
