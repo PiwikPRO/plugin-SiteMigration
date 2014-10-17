@@ -13,7 +13,6 @@ namespace Piwik\Plugins\SiteMigration\Migrator;
 
 use Piwik\Plugins\SiteMigration\Exception\MissingIDTranslationException;
 use Piwik\Plugins\SiteMigration\Helper\DBHelper;
-use Piwik\Plugins\SiteMigration\Model\IdMapCollection;
 use Symfony\Component\Config\Definition\Exception\Exception;
 
 class ActionMigrator
