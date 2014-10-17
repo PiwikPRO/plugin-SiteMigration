@@ -4,10 +4,10 @@ language: php
 
 # We want to test against PHP 5.3.3/5.4/5.5
 php:
-  - 5.6
-  - 5.5
   - 5.4
   - 5.3.3
+  - 5.6
+  - 5.5
 #  - hhvm
 
 # Separate different test suites
@@ -76,6 +76,9 @@ install:
   - ./tests/travis/checkout_dependent_plugins.sh
 
 before_script:
+  - if ([ -n "$TEST_SUITE" ]);
+    then phpenv config-rm xdebug.ini;
+    fi
   - if ([ -z "$TEST_SUITE" ] || [ -n "$PLUGIN_NAME" ]);
     then composer require satooshi/php-coveralls dev-master;
     fi
