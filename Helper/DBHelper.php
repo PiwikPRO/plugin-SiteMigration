@@ -11,8 +11,6 @@
 namespace Piwik\Plugins\SiteMigration\Helper;
 
 
-use Piwik\Common;
-use Piwik\Config;
 use Piwik\Db;
 
 class DBHelper
@@ -72,10 +70,10 @@ class DBHelper
                     $query .= ', ';
                 }
 
-                $values = array_map(function(&$item){
-                    return $this->adapter->quote($item);
-                },
-                $inserts[$i]);
+                $values = array_map(function (&$item) {
+                        return $this->adapter->quote($item);
+                    },
+                    $inserts[$i]);
 
                 $query .= '(' . implode(', ', $values) . ')';
             }

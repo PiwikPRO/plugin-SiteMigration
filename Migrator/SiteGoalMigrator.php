@@ -21,7 +21,6 @@ class SiteGoalMigrator extends Migrator
         parent::__construct($toDbHelper, $gcHelper);
     }
 
-
     protected function translateRow(&$row)
     {
         $row['idsite'] = $this->siteMigrator->getNewId($row['idsite']);

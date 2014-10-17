@@ -407,8 +407,8 @@ class MigrateSite extends ConsoleCommand
 
         if (count($visitIdRanges) > 0) {
             $output->writeln('<info>Migrating visit actions... </info>');
-            $baseQuery     = "SELECT * FROM " . $this->fromDbHelper->prefixTable('log_link_visit_action') . ' WHERE idvisit IN ';
-            $queries       = array();
+            $baseQuery = "SELECT * FROM " . $this->fromDbHelper->prefixTable('log_link_visit_action') . ' WHERE idvisit IN ';
+            $queries   = array();
 
 
             foreach ($visitIdRanges as $range) {

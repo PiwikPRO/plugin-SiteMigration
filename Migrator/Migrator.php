@@ -77,8 +77,6 @@ abstract class Migrator
         return $this->idMap;
     }
 
-
-
     public function checkColumns()
     {
 

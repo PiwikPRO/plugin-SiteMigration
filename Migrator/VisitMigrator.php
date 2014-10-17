@@ -36,7 +36,7 @@ class VisitMigrator extends Migrator
     protected function translateRow(&$row)
     {
         unset($row['idvisit']);
-        
+
         $row['idsite']                    = $this->siteMigrator->getNewId($row['idsite']);
         $row['visit_exit_idaction_url']   = $this->actionMigrator->getNewId($row['visit_exit_idaction_url']);
         $row['visit_exit_idaction_name']  = $this->actionMigrator->getNewId($row['visit_exit_idaction_name']);

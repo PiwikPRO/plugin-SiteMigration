@@ -12,7 +12,6 @@
 namespace Piwik\Plugins\SiteMigration\Test;
 
 
-use Piwik\Plugins\SiteMigration\Exception\MissingIDTranslationException;
 use Piwik\Plugins\SiteMigration\Migrator\ActionMigrator;
 
 /**

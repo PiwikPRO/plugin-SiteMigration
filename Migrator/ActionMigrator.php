@@ -11,9 +11,7 @@
 
 namespace Piwik\Plugins\SiteMigration\Migrator;
 
-use Piwik\Plugins\SiteMigration\Exception\MissingIDTranslationException;
 use Piwik\Plugins\SiteMigration\Helper\DBHelper;
-use Symfony\Component\Config\Definition\Exception\Exception;
 
 class ActionMigrator
 {
@@ -30,8 +28,8 @@ class ActionMigrator
         DBHelper $toDb
     )
     {
-        $this->fromDbHelper    = $fromDb;
-        $this->toDbHelper      = $toDb;
+        $this->fromDbHelper = $fromDb;
+        $this->toDbHelper   = $toDb;
     }
 
     protected function processAction($action)

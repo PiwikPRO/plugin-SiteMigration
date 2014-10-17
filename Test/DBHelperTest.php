@@ -46,7 +46,7 @@ class DBHelperTest extends \PHPUnit_Framework_TestCase
             '',
             false
         );
-        $this->config = array(
+        $this->config  = array(
             'dbname'        => 'piwik__test',
             'host'          => 'example.com',
             'username'      => 'example',
@@ -70,7 +70,7 @@ class DBHelperTest extends \PHPUnit_Framework_TestCase
     public function test_getInsertSQL()
     {
         $values = array('foo' => 'bar', 'dummy' => 'dummy');
-        $sql = "INSERT INTO piwik_table(`foo`, `dummy`) VALUES ('bar', 'dummy')";
+        $sql    = "INSERT INTO piwik_table(`foo`, `dummy`) VALUES ('bar', 'dummy')";
 
         $this->adapter->expects($this->exactly(2))->method('quote')->will(
             $this->returnCallback(

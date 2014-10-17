@@ -37,9 +37,9 @@ class ConversionItemMigrator extends Migrator
 
     public function __construct(DBHelper $toDbHelper, GCHelper $gcHelper, Migrator $siteMigrator, Migrator $visitMigrator, ActionMigrator $actionMigrator)
     {
-        $this->siteMigrator            = $siteMigrator;
-        $this->visitMigrator           = $visitMigrator;
-        $this->actionMigrator          = $actionMigrator;
+        $this->siteMigrator   = $siteMigrator;
+        $this->visitMigrator  = $visitMigrator;
+        $this->actionMigrator = $actionMigrator;
 
         parent::__construct($toDbHelper, $gcHelper);
     }

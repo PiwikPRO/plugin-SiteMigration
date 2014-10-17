@@ -11,7 +11,6 @@
 
 namespace Piwik\Plugins\SiteMigration\Test;
 
-use Piwik\Plugins\SiteMigration\Helper\DBHelper;
 use Piwik\Plugins\SiteMigration\Migrator\VisitMigrator;
 
 /**
@@ -65,7 +64,7 @@ class VisitMigratorTest extends \PHPUnit_Framework_TestCase
 
     protected function reset()
     {
-        $this->adapter      = $this->getMock(
+        $this->adapter = $this->getMock(
             'Zend_Db_Adapter_Pdo_Mysql',
             array('fetchRow', 'fetchAll', 'fetchCol', 'prepare', 'query'),
             array(),
@@ -107,7 +106,7 @@ class VisitMigratorTest extends \PHPUnit_Framework_TestCase
         );
 
 
-        $this->gcHelper      = $this->getMock('Piwik\Plugins\SiteMigration\Helper\GCHelper', array(), array(), '', false);
+        $this->gcHelper = $this->getMock('Piwik\Plugins\SiteMigration\Helper\GCHelper', array(), array(), '', false);
 
         $this->visitMigrator = new VisitMigrator($this->toDbHelper, $this->gcHelper, $this->siteMigrator, $this->actionMigrator);
 
@@ -116,11 +115,11 @@ class VisitMigratorTest extends \PHPUnit_Framework_TestCase
     public function test_migrateVisits()
     {
         $visit = array(
-            'idvisit' => 123,
-            'idsite'  => 2,
-            'visit_exit_idaction_url' => 4,
-            'visit_exit_idaction_name' => 6,
-            'visit_entry_idaction_url' => 8,
+            'idvisit'                   => 123,
+            'idsite'                    => 2,
+            'visit_exit_idaction_url'   => 4,
+            'visit_exit_idaction_name'  => 6,
+            'visit_entry_idaction_url'  => 8,
             'visit_entry_idaction_name' => 10,
 
         );
@@ -133,8 +132,8 @@ class VisitMigratorTest extends \PHPUnit_Framework_TestCase
 
         $this->siteMigrator->expects($this->once())->method('getNewId')->with(2)->will($this->returnValue(3));
         $this->actionMigrator->expects($this->exactly(4))->method('getNewId')->will($this->onConsecutiveCalls(
-                5, 7, 9, 11
-            ));
+            5, 7, 9, 11
+        ));
 
         $this->visitMigrator->migrate($batchProvider);
 

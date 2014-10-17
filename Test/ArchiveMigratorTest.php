@@ -119,7 +119,7 @@ class ArchiveMigratorTest extends \PHPUnit_Framework_TestCase
         );
 
         $this->setupDbHelperGetAdapter($this->fromDbHelper);
-        $this->fromDbHelper->expects($this->once())->method('prefixTable')->will($this->returnValue('piwik_'));
+        $this->fromDbHelper->expects($this->exactly(2))->method('prefixTable')->will($this->returnValue('piwik_'));
         $this->adapter->expects($this->once())->method('fetchCol')->will($this->returnValue($prefixedArchives));
 
         $list = $this->archiveMigrator->getArchiveList();
@@ -138,16 +138,16 @@ class ArchiveMigratorTest extends \PHPUnit_Framework_TestCase
         $this->adapter->expects($this->exactly(2))->method('fetchCol')->will($this->onConsecutiveCalls(
             array(),
             array(321)
-            ));
+        ));
 
         $this->toDbHelper->expects($this->exactly(3))->method('prefixTable')->will($this->returnValue('piwik_'));
         $this->fromDbHelper->expects($this->exactly(2))->method('prefixTable')->will($this->returnValue('piwik_'));
         $this->adapter->expects($this->once())->method('prepare')->will($this->returnValue($this->statement));
         $this->statement->expects($this->once())->method('execute')->with(array($idSite));
         $this->statement->expects($this->exactly(2))->method('fetch')->will($this->onConsecutiveCalls(
-                array('idarchive' => 123, 'idsite' => $idSite, 'data' => 'dummyData', 'name' => 'dummyArchive'),
-                null
-            ));
+            array('idarchive' => 123, 'idsite' => $idSite, 'data' => 'dummyData', 'name' => 'dummyArchive'),
+            null
+        ));
 
 
         $this->toDbHelper->expects($this->once())->method('acquireLock')->will($this->returnValue(true));

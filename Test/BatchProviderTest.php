@@ -43,7 +43,7 @@ class BatchProviderTest extends \PHPUnit_Framework_TestCase
         parent::setUp();
 
 
-        $this->fromDbHelper  = $this->getMock(
+        $this->fromDbHelper = $this->getMock(
             'Piwik\Plugins\SiteMigration\Helper\DBHelper',
             array('getAdapter'),
             array(),
@@ -51,7 +51,7 @@ class BatchProviderTest extends \PHPUnit_Framework_TestCase
             false
         );
 
-        $this->adapter      = $this->getMock(
+        $this->adapter = $this->getMock(
             'Zend_Db_Adapter_Pdo_Mysql',
             array('fetchRow', 'fetchAll', 'prepare'),
             array(),
@@ -69,7 +69,7 @@ class BatchProviderTest extends \PHPUnit_Framework_TestCase
 
         $this->fromDbHelper->expects($this->any())->method('getAdapter')->willReturn($this->adapter);
 
-        $this->gcHelper      = $this->getMock('Piwik\Plugins\SiteMigration\Helper\GCHelper', array(), array(), '', false);
+        $this->gcHelper = $this->getMock('Piwik\Plugins\SiteMigration\Helper\GCHelper', array(), array(), '', false);
     }
 
     public function test_it_splitsQueryCorrectly()

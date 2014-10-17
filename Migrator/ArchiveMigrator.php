@@ -13,8 +13,8 @@ namespace Piwik\Plugins\SiteMigration\Migrator;
 
 use Piwik\Archive;
 use Piwik\Db\Schema;
-use Piwik\Plugins\SiteMigration\Helper\DBHelper;
 use Piwik\DbHelper as PiwikDbHelper;
+use Piwik\Plugins\SiteMigration\Helper\DBHelper;
 
 class ArchiveMigrator
 {
