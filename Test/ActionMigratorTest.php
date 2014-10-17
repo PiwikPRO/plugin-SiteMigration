@@ -41,21 +41,6 @@ class ActionMigratorTest extends \PHPUnit_Framework_TestCase
     /**
      * @var \PHPUnit_Framework_MockObject_MockObject
      */
-    protected $idMapCollection;
-
-    /**
-     * @var \PHPUnit_Framework_MockObject_MockObject
-     */
-    protected $siteMap;
-
-    /**
-     * @var \PHPUnit_Framework_MockObject_MockObject
-     */
-    protected $actionMap;
-
-    /**
-     * @var \PHPUnit_Framework_MockObject_MockObject
-     */
     protected $adapter;
 
     /**
@@ -83,14 +68,6 @@ class ActionMigratorTest extends \PHPUnit_Framework_TestCase
 
     protected function resetActionConfig()
     {
-        $this->siteMap         = $this->getMock('Piwik\Plugins\SiteMigration\Model\IdMap', array('add', 'translate'));
-        $this->actionMap       = $this->getMock('Piwik\Plugins\SiteMigration\Model\IdMap', array('add', 'translate'));
-
-        $this->idMapCollection = $idMapCollection = $this->getMock(
-            'Piwik\Plugins\SiteMigration\Model\IdMapCollection',
-            array('getSiteMap', 'getActionMap')
-        );
-
         $this->adapter      = $this->getMock(
             'Zend_Db_Adapter_Pdo_Mysql',
             array('fetchRow', 'fetchAll', 'prepare'),
@@ -122,20 +99,14 @@ class ActionMigratorTest extends \PHPUnit_Framework_TestCase
             false
         );
 
-        $this->actionMigrator = new ActionMigrator($this->fromDbHelper, $this->toDbHelper, $this->idMapCollection);
+        $this->actionMigrator = new ActionMigrator($this->fromDbHelper, $this->toDbHelper);
 
     }
 
 
     public function test_ensureActionIsMigrated_actionIsMigrated()
     {
-
-        $this->idMapCollection->expects($this->once())->method('getActionMap')->with()->will(
-            $this->returnValue($this->actionMap)
-        );
-        $this->actionMap->expects($this->once())->method('translate')->with($this->equalTo(123))->will(
-            $this->returnValue(321)
-        );
+        $this->actionMigrator->addNewId(123, 321);
 
         $this->actionMigrator->ensureActionIsMigrated(123);
     }
@@ -147,7 +118,7 @@ class ActionMigratorTest extends \PHPUnit_Framework_TestCase
         $actionTranslated = $action;
         unset($actionTranslated['idaction']);
 
-        $this->setupEnureActionIsMigratedMigrationTest($action);
+        $this->setupEnsureActionIsMigratedMigrationTest($action);
 
         $this->toDbHelper->expects($this->once())->method('executeInsert')->with(
             $this->equalTo('log_action'),
@@ -155,29 +126,27 @@ class ActionMigratorTest extends \PHPUnit_Framework_TestCase
         );
 
         $this->toDbHelper->expects($this->once())->method('lastInsertId')->will($this->returnValue(321));
-        $this->actionMap->expects($this->once())->method('add')->with($this->equalTo(123), $this->equalTo(321));
+        $this->actionMigrator->ensureActionIsMigrated(123);
 
-        $this->assertTrue($this->actionMigrator->ensureActionIsMigrated(123));
+        $this->assertEquals($this->actionMigrator->getNewId(123), 321);
     }
 
     public function test_ensureActionIsMigrated_actionDoesNotExist()
     {
         $action = null;
 
-        $this->setupEnureActionIsMigratedMigrationTest($action);
+        $this->setupDbHelperGetAdapter($this->fromDbHelper);
         $this->assertFalse($this->actionMigrator->ensureActionIsMigrated(123));
     }
 
     public function test_ensureActionIsMigrated_actionAlreadyMigrated()
     {
-        $action          = $this->dummyAction;
         $existingActions = $this->dummyExistingActions;
 
-        $this->setupEnureActionIsMigratedMigrationTest($action);
         $this->actionMigrator->setExistingActions($existingActions);
         $this->toDbHelper->expects($this->never())->method('executeInsert');
-
-        $this->actionMap->expects($this->once())->method('add')->with($this->equalTo(123), $this->equalTo(321));
+        $this->adapter->expects($this->once())->method('fetchRow')->will($this->returnValue($this->dummyAction));
+        $this->setupDbHelperGetAdapter($this->fromDbHelper);
 
         $this->assertTrue($this->actionMigrator->ensureActionIsMigrated(123));
     }
@@ -201,25 +170,20 @@ class ActionMigratorTest extends \PHPUnit_Framework_TestCase
         $this->statement->expects($this->once())->method('execute');
         $this->statement->expects($this->exactly(2))->method('fetch')->will($this->onConsecutiveCalls($action, null));
 
-        $this->assertTrue($this->actionMigrator->loadExistingActions());
+        $this->actionMigrator->loadExistingActions();
+
         $this->assertEquals($this->dummyExistingActions, $this->actionMigrator->getExistingActions());
     }
 
-    protected function setupEnureActionIsMigratedMigrationTest($action)
+    protected function setupEnsureActionIsMigratedMigrationTest($action)
     {
-        $this->idMapCollection->expects($this->atLeastOnce())->method('getActionMap')->with()->will(
-            $this->returnValue($this->actionMap)
-        );
-        $this->actionMap->expects($this->once())->method('translate')->with($this->equalTo(123))->will(
-            $this->throwException(new \InvalidArgumentException('Nope'))
-        );
         $this->setupDbHelperGetAdapter($this->fromDbHelper);
         $this->adapter->expects($this->once())->method('fetchRow')->will($this->returnValue($action));
     }
 
-    protected function setupDbHelperGetAdapter(\PHPUnit_Framework_MockObject_MockObject $adapter)
+    protected function setupDbHelperGetAdapter(\PHPUnit_Framework_MockObject_MockObject $helper)
     {
-        $adapter->expects($this->once())->method('getAdapter')->with()->will(
+        $helper->expects($this->once())->method('getAdapter')->with()->will(
             $this->returnValue($this->adapter)
         );
     }

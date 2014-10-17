@@ -40,12 +40,7 @@ class ArchiveMigratorTest extends \PHPUnit_Framework_TestCase
     /**
      * @var \PHPUnit_Framework_MockObject_MockObject
      */
-    protected $idMapCollection;
-
-    /**
-     * @var \PHPUnit_Framework_MockObject_MockObject
-     */
-    protected $siteMap;
+    protected $siteMigrator;
 
     /**
      * @var \PHPUnit_Framework_MockObject_MockObject
@@ -67,10 +62,12 @@ class ArchiveMigratorTest extends \PHPUnit_Framework_TestCase
 
     protected function reset()
     {
-        $this->siteMap         = $this->getMock('Piwik\Plugins\SiteMigration\Model\IdMap', array('add', 'translate'));
-        $this->idMapCollection = $idMapCollection = $this->getMock(
-            'Piwik\Plugins\SiteMigration\Model\IdMapCollection',
-            array('getSiteMap', 'getActionMap')
+        $this->siteMigrator = $this->getMock(
+            'Piwik\Plugins\SiteMigration\Migrator\SiteMigrator',
+            array('getNewId'),
+            array(),
+            '',
+            false
         );
 
         $this->adapter      = $this->getMock(
@@ -104,7 +101,7 @@ class ArchiveMigratorTest extends \PHPUnit_Framework_TestCase
             false
         );
 
-        $this->archiveMigrator = new ArchiveMigrator($this->fromDbHelper, $this->toDbHelper, $this->idMapCollection);
+        $this->archiveMigrator = new ArchiveMigrator($this->fromDbHelper, $this->toDbHelper, $this->siteMigrator);
 
     }
 
@@ -122,7 +119,7 @@ class ArchiveMigratorTest extends \PHPUnit_Framework_TestCase
         );
 
         $this->setupDbHelperGetAdapter($this->fromDbHelper);
-        $this->fromDbHelper->expects($this->once())->method('prefixTable')->will($this->returnValue('piwik_'));
+        $this->fromDbHelper->expects($this->exactly(2))->method('prefixTable')->will($this->returnValue('piwik_'));
         $this->adapter->expects($this->once())->method('fetchCol')->will($this->returnValue($prefixedArchives));
 
         $list = $this->archiveMigrator->getArchiveList();
@@ -141,23 +138,22 @@ class ArchiveMigratorTest extends \PHPUnit_Framework_TestCase
         $this->adapter->expects($this->exactly(2))->method('fetchCol')->will($this->onConsecutiveCalls(
             array(),
             array(321)
-            ));
+        ));
 
         $this->toDbHelper->expects($this->exactly(3))->method('prefixTable')->will($this->returnValue('piwik_'));
         $this->fromDbHelper->expects($this->exactly(2))->method('prefixTable')->will($this->returnValue('piwik_'));
         $this->adapter->expects($this->once())->method('prepare')->will($this->returnValue($this->statement));
         $this->statement->expects($this->once())->method('execute')->with(array($idSite));
         $this->statement->expects($this->exactly(2))->method('fetch')->will($this->onConsecutiveCalls(
-                array('idarchive' => 123, 'idsite' => $idSite, 'data' => 'dummyData', 'name' => 'dummyArchive'),
-                null
-            ));
+            array('idarchive' => 123, 'idsite' => $idSite, 'data' => 'dummyData', 'name' => 'dummyArchive'),
+            null
+        ));
 
 
         $this->toDbHelper->expects($this->once())->method('acquireLock')->will($this->returnValue(true));
         $this->toDbHelper->expects($this->once())->method('releaseLock')->will($this->returnValue(true));
         $this->toDbHelper->expects($this->once())->method('executeInsert')->will($this->returnValue(true));
-        $this->idMapCollection->expects($this->once())->method('getSiteMap')->with()->will($this->returnValue($this->siteMap));
-        $this->siteMap->expects($this->once())->method('translate')->with($idSite)->will($this->returnValue(2));
+        $this->siteMigrator->expects($this->once())->method('getNewId')->with($idSite)->willReturn(2);
 
         $this->archiveMigrator->migrateArchive('archive_num_01_2013', $idSite);
     }

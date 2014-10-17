@@ -11,10 +11,10 @@
 
 namespace Piwik\Plugins\SiteMigration\Migrator;
 
+use Piwik\Archive;
 use Piwik\Db\Schema;
-use Piwik\Plugins\SiteMigration\Helper\DBHelper;
-use Piwik\Plugins\SiteMigration\Model\IdMapCollection;
 use Piwik\DbHelper as PiwikDbHelper;
+use Piwik\Plugins\SiteMigration\Helper\DBHelper;
 
 class ArchiveMigrator
 {
@@ -22,21 +22,25 @@ class ArchiveMigrator
 
     protected $toDbHelper;
 
-    protected $idMapCollection;
+    /**
+     * @var SiteMigrator
+     */
+    protected $siteMigrator;
 
     public function __construct(
         DBHelper $fromDb,
         DBHelper $toDb,
-        IdMapCollection $idMapCollection
-    ) {
-        $this->fromDbHelper    = $fromDb;
-        $this->toDbHelper      = $toDb;
-        $this->idMapCollection = $idMapCollection;
+        SiteMigrator $siteMigrator
+    )
+    {
+        $this->fromDbHelper = $fromDb;
+        $this->toDbHelper   = $toDb;
+        $this->siteMigrator = $siteMigrator;
     }
 
-    public function getArchiveList()
+    public function getArchiveList($dateFrom = null, $dateTo = null)
     {
-        $tables = $this->fromDbHelper->getAdapter()->fetchCol("SHOW TABLES LIKE 'piwik_archive_%'");
+        $tables = $this->fromDbHelper->getAdapter()->fetchCol("SHOW TABLES LIKE '" . $this->fromDbHelper->prefixTable('archive_') . "%'");
         $prefix = $this->fromDbHelper->prefixTable('');
 
         array_walk(
@@ -45,6 +49,16 @@ class ArchiveMigrator
                 $value = str_replace($prefix, '', $value);
             }
         );
+
+        if ($dateFrom || $dateTo) {
+            foreach ($tables as $key => $table) {
+                $date = str_replace('_', '-', substr($table, -7)) . '-01';
+                $date = new \DateTime($date);
+                if (($dateFrom && $dateFrom > $date) || ($dateTo && $dateTo < $date)) {
+                    unset($tables[$key]);
+                }
+            }
+        }
 
         return $tables;
     }
@@ -69,7 +83,7 @@ class ArchiveMigrator
         $id = $this->getNextArchiveId($archive, $record['name']);
 
         $record['idarchive'] = $id;
-        $record['idsite']    = $this->idMapCollection->getSiteMap()->translate($record['idsite']);
+        $record['idsite']    = $this->siteMigrator->getNewId($record['idsite']);
 
         $this->toDbHelper->executeInsert($archive, $record);
 

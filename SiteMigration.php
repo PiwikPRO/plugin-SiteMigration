@@ -17,14 +17,6 @@ class SiteMigration extends \Piwik\Plugin
      */
     public function getListHooksRegistered()
     {
-        return array(
-            'Console.addCommands' => 'addConsoleCommands'
-        );
-    }
-
-
-    public function addConsoleCommands(&$commands)
-    {
-        $commands[] = __NAMESPACE__ . '\Commands\MigrateSite';
+        return array();
     }
 }

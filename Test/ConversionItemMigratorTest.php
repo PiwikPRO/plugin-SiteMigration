@@ -11,21 +11,21 @@
 
 namespace Piwik\Plugins\SiteMigration\Test;
 
-use Piwik\Plugins\SiteMigration\Migrator\ConversionMigrator;
+use Piwik\Plugins\SiteMigration\Migrator\ConversionItemMigrator;
 
 /**
- * Class ConversionMigratorTest
+ * Class ConversionItemMigratorTest
  * @package Piwik\Plugins\SiteMigration\Test
  *
  * @group SiteMigration
  */
-class ConversionMigratorTest extends \PHPUnit_Framework_TestCase
+class ConversionItemMigratorTest extends \PHPUnit_Framework_TestCase
 {
 
     /**
-     * @var ConversionMigrator
+     * @var ConversionItemMigrator
      */
-    protected $conversionMigrator;
+    protected $conversionItemMigrator;
 
     /**
      * @var \PHPUnit_Framework_MockObject_MockObject
@@ -112,40 +112,37 @@ class ConversionMigratorTest extends \PHPUnit_Framework_TestCase
 
         $this->gcHelper = $this->getMock('Piwik\Plugins\SiteMigration\Helper\GCHelper', array(), array(), '', false);
 
-        $this->conversionMigrator = new ConversionMigrator($this->toDbHelper, $this->gcHelper, $this->siteMigrator, $this->visitMigrator, $this->actionMigrator, $this->linkVisitActionMigrator);
+        $this->conversionItemMigrator = new ConversionItemMigrator($this->toDbHelper, $this->gcHelper, $this->siteMigrator, $this->visitMigrator, $this->actionMigrator);
 
     }
 
-
-    public function test_migrateConversions()
+    public function test_migrateConversionItems()
     {
-        $conversion = array(
-            'idsite'       => 1,
-            'idvisit'      => 3,
-            'idlink_va'    => 5,
-            'idaction_url' => 7,
+        $conversionItem = array(
+            'idsite'             => 1,
+            'idvisit'            => 3,
+            'idlink_va'          => 5,
+            'idaction_sku'       => 7,
+            'idaction_name'      => 0,
+            'idaction_category'  => 11,
+            'idaction_category2' => 13,
+            'idaction_category3' => 15,
+            'idaction_category4' => 17,
+            'idaction_category5' => 19
         );
 
-        $this->toDbHelper->expects($this->once())->method('executeInsert')
-            ->with(
-                'log_conversion',
-                $this->equalTo(
-                    array(
-                        'idsite'       => 2,
-                        'idvisit'      => 4,
-                        'idlink_va'    => 6,
-                        'idaction_url' => 8,
-                    )
-                )
-            );
+        $this->toDbHelper->expects($this->once())->method('executeInsert')->with(
+            'log_conversion_item',
+            $this->anything()
+        );
 
         $this->siteMigrator->expects($this->once())->method('getNewId')->with(1)->willReturn(2);
         $this->visitMigrator->expects($this->once())->method('getNewId')->with(3)->willReturn(4);
-        $this->linkVisitActionMigrator->expects($this->once())->method('getNewId')->with(5)->willReturn(6);
-        $this->actionMigrator->expects($this->once())->method('getNewId')->with(7)->willReturn(8);
+        $this->actionMigrator->expects($this->exactly(6))->method('getNewId')->will(
+            $this->onConsecutiveCalls(2, 4, 6, 8, 12, 14, 16, 18, 20)
+        );
 
-
-        $this->conversionMigrator->migrate(new \ArrayIterator(array($conversion)));
+        $this->conversionItemMigrator->migrate(new \ArrayIterator(array($conversionItem)));
     }
 
 }

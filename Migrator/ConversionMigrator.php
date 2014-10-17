@@ -1,157 +1,75 @@
 <?php
-/**
- * Piwik PRO - cloud hosting and enterprise analytics consultancy
- * from the creators of Piwik.org
- *
- * @link http://piwik.pro
- * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
- */
 
 
 namespace Piwik\Plugins\SiteMigration\Migrator;
 
+
 use Piwik\Plugins\SiteMigration\Helper\DBHelper;
-use Piwik\Plugins\SiteMigration\Model\IdMapCollection;
-use \InvalidArgumentException;
+use Piwik\Plugins\SiteMigration\Helper\GCHelper;
 
-class ConversionMigrator
+class ConversionMigrator extends Migrator
 {
-    protected $fromDbHelper;
+    /**
+     * @var SiteMigrator
+     */
+    protected $siteMigrator;
 
-    protected $toDbHelper;
+    /**
+     * @var VisitMigrator
+     */
+    protected $visitMigrator;
 
-    protected $idMapCollection;
+    /**
+     * @var LinkVisitActionMigrator
+     */
+    protected $linkVisitActionMigrator;
 
+    /**
+     * @var LinkVisitActionMigrator
+     */
     protected $actionMigrator;
 
-    protected $actionsToTranslate = array(
-        'idaction_sku',
-        'idaction_name',
-        'idaction_category',
-        'idaction_category2',
-        'idaction_category3',
-        'idaction_category4',
-        'idaction_category5'
-    );
+    public function __construct(DBHelper $toDbHelper, GCHelper $gcHelper, Migrator $siteMigrator, Migrator $visitMigrator, ActionMigrator $actionMigrator, Migrator $linkVisitActionMigrator)
+    {
+        $this->siteMigrator            = $siteMigrator;
+        $this->visitMigrator           = $visitMigrator;
+        $this->actionMigrator          = $actionMigrator;
+        $this->linkVisitActionMigrator = $linkVisitActionMigrator;
 
-    public function __construct(
-        DBHelper $fromDb,
-        DBHelper $toDb,
-        IdMapCollection $idMapCollection,
-        ActionMigrator $actionMigrator
-    ) {
-        $this->fromDbHelper    = $fromDb;
-        $this->toDbHelper      = $toDb;
-        $this->idMapCollection = $idMapCollection;
-        $this->actionMigrator  = $actionMigrator;
+        parent::__construct($toDbHelper, $gcHelper);
     }
 
-    public function migrateConversions($idSite)
+    protected function translateRow(&$row)
     {
-        $conversions = $this->getConversionsQuery($idSite);
+        $row['idsite']  = $this->siteMigrator->getNewId($row['idsite']);
+        $row['idvisit'] = $this->visitMigrator->getNewId($row['idvisit']);
 
-        while ($conversion = $conversions->fetch()) {
-            try {
-                $this->processConversion($conversion);
-            } catch (InvalidArgumentException $e ) {
-                // do nothing, just skip
-            }
-
-        }
-        $conversions->closeCursor();
-    }
-
-    public function migrateConversionItems($idSite)
-    {
-        $items = $this->getConversionItemsQuery($idSite);
-
-        while ($item = $items->fetch()) {
-            try {
-                $this->processConversionItem($item);
-            } catch (InvalidArgumentException $e ) {
-                // do nothing, just skip
-            }
-
-        }
-        $items->closeCursor();
-
-        unset($items);
-        gc_collect_cycles();
-    }
-
-    protected function processConversion($conversion)
-    {
-        $this->translateConversionData($conversion);
-        $this->toDbHelper->executeInsert('log_conversion', $conversion);
-    }
-
-    protected function processConversionItem($item)
-    {
-        $this->translateConversionItemData($item);
-        $this->toDbHelper->executeInsert('log_conversion_item', $item);
-    }
-
-    protected function translateConversionData(&$conversion)
-    {
-
-        $conversion['idsite']  = $this->idMapCollection->getSiteMap()->translate($conversion['idsite']);
-        $conversion['idvisit'] = $this->idMapCollection->getVisitMap()->translate($conversion['idvisit']);
-
-        if ($conversion['idlink_va']) {
-            $conversion['idlink_va'] = $this->idMapCollection->getVisitActionMap()->translate($conversion['idlink_va']);
+        if ($row['idlink_va']) {
+            $row['idlink_va'] = $this->linkVisitActionMigrator->getNewId($row['idlink_va']);
         }
 
-        if ($conversion['idaction_url']) {
-            $conversion['idaction_url'] = $this->translateAction(
-                $conversion['idaction_url']
+        if ($row['idaction_url']) {
+            $row['idaction_url'] = $this->actionMigrator->getNewId(
+                $row['idaction_url']
             );
         }
-
     }
 
-    protected function translateConversionItemData(&$item)
+    /**
+     * @return string Name of the table migrated by this migration
+     */
+    protected function getTableName()
     {
-
-        $item['idsite']  = $this->idMapCollection->getSiteMap()->translate($item['idsite']);
-        $item['idvisit'] = $this->idMapCollection->getVisitMap()->translate($item['idvisit']);
-
-        foreach ($this->actionsToTranslate as $translationKey) {
-            if ($item[$translationKey] == 0) {
-                continue;
-            }
-
-            $item[$translationKey] = $this->translateAction($item[$translationKey]);
-        }
-
+        return 'log_conversion';
     }
 
-    protected function getConversionsQuery($idSite)
+    /**
+     * @param array $row
+     *
+     * @return int  The current id stored in the given row
+     */
+    protected function getIdFromRow(&$row)
     {
-        $query = $this->fromDbHelper->getAdapter()->prepare(
-            'SELECT * FROM ' . $this->fromDbHelper->prefixTable('log_conversion') . ' WHERE idsite  = :idSite AND idvisit IN (' . implode(',', array_keys($this->idMapCollection->getVisitMap()->getIds())) . ')'
-        );
-        $query->execute(array('idSite' => $idSite));
-
-        return $query;
+        return null;
     }
-
-    protected function translateAction($idAction)
-    {
-        $this->actionMigrator->ensureActionIsMigrated($idAction);
-
-        return $this->idMapCollection->getActionMap()->translate($idAction);
-    }
-
-    protected function getConversionItemsQuery($idSite)
-    {
-        $query = $this->fromDbHelper->getAdapter()->prepare(
-            'SELECT * FROM ' . $this->fromDbHelper->prefixTable('log_conversion_item') . ' WHERE idsite  = :idSite AND idvisit IN (' . implode(',', array_keys($this->idMapCollection->getVisitMap()->getIds())) . ')'
-        );
-        $query->execute(array('idSite' => $idSite));
-
-        return $query;
-    }
-
-
-} 
+}

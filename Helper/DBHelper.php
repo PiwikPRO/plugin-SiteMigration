@@ -11,8 +11,6 @@
 namespace Piwik\Plugins\SiteMigration\Helper;
 
 
-use Piwik\Common;
-use Piwik\Config;
 use Piwik\Db;
 
 class DBHelper
@@ -20,6 +18,8 @@ class DBHelper
     protected $adapter;
 
     protected $config;
+
+    protected $inserts = array();
 
     function __construct(\Zend_Db_Adapter_Abstract $adapter, $config)
     {
@@ -44,6 +44,51 @@ class DBHelper
     public function executeInsert($table, $values)
     {
         $this->adapter->insert($this->prefixTable($table), $values);
+    }
+
+    public function insert($table, $values)
+    {
+        if (!array_key_exists($table, $this->inserts)) {
+            $this->inserts[$table] = array();
+        }
+
+        $this->inserts[$table][] = $values;
+    }
+
+    public function flush()
+    {
+        $this->flushInserts();
+    }
+
+    public function flushInserts()
+    {
+        foreach ($this->inserts as $table => $inserts) {
+            $query = 'INSERT INTO ' . $this->prefixTable($table) . ' (`' . implode('`, `', array_keys($inserts[0])) . '`) VALUES ';
+
+            for ($i = 0; $i < count($inserts); $i++) {
+                if ($i > 0) {
+                    $query .= ', ';
+                }
+
+                /**
+                 * Workaround for php 5.3
+                 */
+                $dbHelper = &$this;
+
+                $values = array_map(function (&$item) use ($dbHelper){
+                        return $dbHelper->adapter->quote($item);
+                    },
+                    $inserts[$i]);
+
+                $query .= '(' . implode(', ', $values) . ')';
+            }
+
+            $this->adapter->query($query);
+        }
+        /**
+         * Clear inserts
+         */
+        $this->inserts = array();
     }
 
     public function getDBName()

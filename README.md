@@ -18,14 +18,14 @@ To get a full list of options.
 
 ```
 __Usage:__
- migration:site [--skip-archived] [--skip-raw] [-H|--host="..."] [-U|--username="..."] [-P|--password="..."] [-N|--dbname="..."] [--prefix="..."] [--port="..."] [-F|--date-from="..."] [-T|--date-to="..."] [-I|--new-id-site="..."] idSite
+ migration:site [--skip-archived] [--skip-log-data] [-H|--host="..."] [-U|--username="..."] [-P|--password="..."] [-N|--dbname="..."] [--prefix="..."] [--port="..."] [-F|--date-from="..."] [-T|--date-to="..."] [-I|--new-id-site="..."] idSite
 
 __Arguments:__
  idSite                Site id
 
 __Options:__
- --skip-archived       Skip migration of archived data
- --skip-raw            Skip migration of raw data
+ --skip-archive-data   Skip migration of archive data
+ --skip-log-data       Skip migration of log data
  --host (-H)           Destination database host
  --username (-U)       Destination database username
  --password (-P)       Destination database password
@@ -34,7 +34,7 @@ __Options:__
  --port                Destination database port (default: "3306")
  --date-from (-F)      Start date from which data should be migrated
  --date-to (-T)        Start date from which data should be migrated
- --new-id-site (-I)    New site id, if provided site config will not be migrated, raw and archive data will be copied into existing site
+ --new-id-site (-I)    New site id, if provided site config will not be migrated, log and archive data will be copied into existing site
  --help (-h)           Display this help message.
  --quiet (-q)          Do not output any message.
  --verbose (-v|vv|vvv) Increase the verbosity of messages: 1 for normal output, 2 for more verbose output and 3 for debug
@@ -51,9 +51,9 @@ You can use command options: --date-from and --date-to
 
 __How can I migrate site data to an existing page?__
 Please make sure that the config of the new site id is present and it is in sync with the config of the old file (custom vars, goals, etc).
-Please check also if the site log is empty (both raw and archive).
+Please check also if the site log is empty (both log and archive).
 
-If both above conditions are met run the migrate:site command with the -I|--new-site-id param - this will skip config migration and will go straightly to raw data log and archive migration.
+If both above conditions are met run the migrate:site command with the -I|--new-site-id param - this will skip config migration and will go straightly to log data log and archive migration.
 
 __How can I skip migrating archived data?__
 Just add the "--skip-archived" option.
