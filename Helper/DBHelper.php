@@ -70,8 +70,13 @@ class DBHelper
                     $query .= ', ';
                 }
 
-                $values = array_map(function (&$item) {
-                        return $this->adapter->quote($item);
+                /**
+                 * Workaround for php 5.3
+                 */
+                $dbHelper = &$this;
+
+                $values = array_map(function (&$item) use ($dbHelper){
+                        return $dbHelper->adapter->quote($item);
                     },
                     $inserts[$i]);
 
