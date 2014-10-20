@@ -76,7 +76,7 @@ class DBHelper
                 $dbHelper = &$this;
 
                 $values = array_map(function (&$item) use ($dbHelper){
-                        return $dbHelper->adapter->quote($item);
+                        return $dbHelper->getAdapter()->quote($item);
                     },
                     $inserts[$i]);
 
