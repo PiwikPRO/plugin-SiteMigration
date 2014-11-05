@@ -55,11 +55,6 @@ class DBHelper
         $this->inserts[$table][] = $values;
     }
 
-    public function flush()
-    {
-        $this->flushInserts();
-    }
-
     public function flushInserts()
     {
         foreach ($this->inserts as $table => $inserts) {

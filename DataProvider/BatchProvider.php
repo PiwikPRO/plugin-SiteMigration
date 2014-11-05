@@ -140,21 +140,31 @@ class BatchProvider implements \Iterator
             $this->initQuery();
         }
 
-        $this->row = $this->rows->fetch();
+        $this->row = null;
 
-        if ($this->row) {
-            $this->currentPosition++;
-        } else {
-            $this->query = array_shift($this->queries);
+        while (!$this->row) {
+            $this->row = $this->rows->fetch();
 
-            if ($this->query) {
-                $this->start = 0;
-                $this->initQuery();
+            if ($this->row) {
+                $this->currentPosition++;
+            } else {
+                $this->query = array_shift($this->queries);
 
-                return $this->loadNextRow();
+                if ($this->query) {
+                    $this->start = 0;
+                    $this->initQuery();
+
+                    if ($this->rows->rowCount() > 0) {
+                        continue;
+                    }
+                } else {
+                    /**
+                     * No more results, exit
+                     */
+                    $this->cleanupResults();
+                    return;
+                }
             }
-
-            $this->cleanupResults();
         }
     }
 
