@@ -61,7 +61,7 @@ class BatchProviderTest extends \PHPUnit_Framework_TestCase
 
         $this->statement = $this->getMock(
             'Zend_Db_Statement_Pdo',
-            array('execute', 'fetch', 'closeCursor'),
+            array('execute', 'fetch', 'closeCursor', 'rowCount'),
             array(),
             '',
             false
@@ -78,20 +78,24 @@ class BatchProviderTest extends \PHPUnit_Framework_TestCase
 
         $this->adapter->expects($this->exactly(2))->method('prepare')->withConsecutive(array('SELECT * FROM table LIMIT 0, 2'), array('SELECT * FROM table LIMIT 2, 2'))->willReturn($this->statement);
         $this->statement->expects($this->exactly(4))->method('fetch')->willReturn(array('foo' => 'bar'));
+
         $this->batchProvider->rewind();
-
         $this->batchProvider->next();
         $this->batchProvider->next();
-
         $this->batchProvider->next();
     }
 
     public function test_it_supportsMultipleQueries()
     {
-        $this->setupBatchProvider(array('SELECT * FROM table1', 'SELECT * FROM table2'));
+        $this->setupBatchProvider(array('SELECT * FROM table1', 'SELECT * FROM table2', 'SELECT * FROM table3'));
 
-        $this->adapter->expects($this->exactly(2))->method('prepare')->withConsecutive(array('SELECT * FROM table1 LIMIT 0, 2'), array('SELECT * FROM table2 LIMIT 0, 2'))->willReturn($this->statement);
-        $this->statement->expects($this->exactly(2))->method('fetch')->willReturn(null);
+        $this->adapter->expects($this->exactly(3))->method('prepare')->withConsecutive(
+            array('SELECT * FROM table1 LIMIT 0, 2'),
+            array('SELECT * FROM table2 LIMIT 0, 2'),
+            array('SELECT * FROM table3 LIMIT 0, 2')
+        )->willReturn($this->statement);
+
+        $this->statement->expects($this->exactly(3))->method('fetch')->willReturn(null);
 
         $this->batchProvider->rewind();
         $this->batchProvider->next();

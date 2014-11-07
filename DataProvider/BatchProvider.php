@@ -130,7 +130,6 @@ class BatchProvider implements \Iterator
 
     protected function loadNextRow()
     {
-
         if (!$this->rows) {
             return;
         }
@@ -142,28 +141,27 @@ class BatchProvider implements \Iterator
 
         $this->row = null;
 
-        while (!$this->row) {
+        while (!$this->row && $this->query) {
             $this->row = $this->rows->fetch();
+            $this->ensureNextRowIsAvailable();
+        }
+    }
 
-            if ($this->row) {
-                $this->currentPosition++;
+    protected function ensureNextRowIsAvailable()
+    {
+        if ($this->row) {
+            $this->currentPosition++;
+        } else {
+            $this->query = array_shift($this->queries);
+
+            if ($this->query) {
+                $this->start = 0;
+                $this->initQuery();
             } else {
-                $this->query = array_shift($this->queries);
-
-                if ($this->query) {
-                    $this->start = 0;
-                    $this->initQuery();
-
-                    if ($this->rows->rowCount() > 0) {
-                        continue;
-                    }
-                } else {
-                    /**
-                     * No more results, exit
-                     */
-                    $this->cleanupResults();
-                    return;
-                }
+                /**
+                 * No more results, exit
+                 */
+                $this->cleanupResults();
             }
         }
     }
