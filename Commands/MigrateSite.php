@@ -116,11 +116,11 @@ class MigrateSite extends ConsoleCommand
 
         $endTime = microtime(true);
 
-        $output->writeln(sprintf(PHP_EOL . '<comment>Time taken %01.2f sec</comment>', $endTime - $startTime));
-        $output->writeln(sprintf('<comment>Memory allocated %01.2f MB</comment>', memory_get_usage(true) / 1048576));
-        $output->writeln(
-            sprintf('<comment>Memory allocated peak %01.2f MB</comment>', memory_get_peak_usage(true) / 1048576)
-        );
+        $output->writeln(sprintf(PHP_EOL . '<comment>Time taken: %01.2f sec</comment>', $endTime - $startTime));
+        $output->writeln(sprintf(
+            '<comment>Peak memory usage: %01.2f MB</comment>',
+            memory_get_peak_usage(true) / 1048576
+        ));
     }
 
 
