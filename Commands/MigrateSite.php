@@ -91,7 +91,11 @@ class MigrateSite extends ConsoleCommand
 
         $tmpConfig = $config;
         $sourceDb = Db::get();
-        $targetDb = @Db\Adapter::factory($config['adapter'], $tmpConfig);
+        try {
+            $targetDb = @Db\Adapter::factory($config['adapter'], $tmpConfig);
+        } catch (\Exception $e) {
+            throw new \RuntimeException('Unable to connect to the target database: ' . $e->getMessage(), 0, $e);
+        }
 
         if ($output->getVerbosity() == OutputInterface::VERBOSITY_VERBOSE) {
             Log::getInstance()->setLogLevel(Log::INFO);
