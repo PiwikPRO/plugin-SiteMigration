@@ -133,4 +133,14 @@ class DBHelper
     {
         return $this->adapter->lastInsertId($tableName, $primaryKey);
     }
-} 
+
+    public function startTransaction()
+    {
+        $this->adapter->beginTransaction();
+    }
+
+    public function commitTransaction()
+    {
+        $this->adapter->commit();
+    }
+}

@@ -17,10 +17,6 @@ use Piwik\Plugins\SiteMigration\Helper\GCHelper;
 class MigratorFacade
 {
     /**
-     * @var \Zend_Db_Adapter_Abstract
-     */
-    private $targetDb;
-    /**
      * @var DBHelper
      */
     private $targetDbHelper;
@@ -74,13 +70,12 @@ class MigratorFacade
      */
     private $migratorSettings;
 
-    function __construct(DBHelper $sourceDbHelper, $targetDb, $targetDbHelper, $gcHelper, $migratorSettings)
+    public function __construct(DBHelper $sourceDbHelper, DBHelper $targetDbHelper, GCHelper $gcHelper, MigratorSettings $migratorSettings)
     {
         $this->sourceDbHelper   = $sourceDbHelper;
+        $this->targetDbHelper   = $targetDbHelper;
         $this->gcHelper         = $gcHelper;
         $this->migratorSettings = $migratorSettings;
-        $this->targetDb         = $targetDb;
-        $this->targetDbHelper   = $targetDbHelper;
 
         $this->setupMigrators();
     }
@@ -96,18 +91,6 @@ class MigratorFacade
         $this->conversionMigrator     = new ConversionMigrator($this->targetDbHelper, $this->gcHelper, $this->siteMigrator, $this->visitMigrator, $this->actionMigrator, $this->visitActionMigrator);
         $this->conversionItemMigrator = new ConversionItemMigrator($this->targetDbHelper, $this->gcHelper, $this->siteMigrator, $this->visitMigrator, $this->actionMigrator);
         $this->archiveMigrator        = new ArchiveMigrator($this->sourceDbHelper, $this->targetDbHelper, $this->siteMigrator);
-    }
-
-    public function startTransaction()
-    {
-        Log::warning('Start transaction');
-        $this->targetDb->beginTransaction();
-    }
-
-    public function commitTransaction()
-    {
-        Log::warning('Commit transaction');
-        $this->targetDb->commit();
     }
 
     public function migrate()
@@ -133,6 +116,18 @@ class MigratorFacade
         }
 
         $this->commitTransaction();
+    }
+
+    private function startTransaction()
+    {
+        Log::warning('Start transaction');
+        $this->targetDbHelper->startTransaction();
+    }
+
+    private function commitTransaction()
+    {
+        Log::warning('Commit transaction');
+        $this->targetDbHelper->commitTransaction();
     }
 
     private function migrateSiteConfig()

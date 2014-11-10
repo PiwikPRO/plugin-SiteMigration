@@ -103,7 +103,6 @@ class MigrateSite extends ConsoleCommand
 
         $migratorFacade = new MigratorFacade(
             new DBHelper($sourceDb, Db::getDatabaseConfig()),
-            $targetDb,
             new DBHelper($targetDb, $config),
             GCHelper::getInstance(),
             $migratorSettings
