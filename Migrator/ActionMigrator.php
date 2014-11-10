@@ -5,9 +5,7 @@
  *
  * @link http://piwik.pro
  * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
  */
-
 
 namespace Piwik\Plugins\SiteMigration\Migrator;
 
@@ -23,13 +21,10 @@ class ActionMigrator
 
     protected $idMap = array();
 
-    public function __construct(
-        DBHelper $fromDb,
-        DBHelper $toDb
-    )
+    public function __construct(DBHelper $fromDb, DBHelper $toDb)
     {
         $this->fromDbHelper = $fromDb;
-        $this->toDbHelper   = $toDb;
+        $this->toDbHelper = $toDb;
     }
 
     protected function processAction($action)
@@ -126,5 +121,4 @@ class ActionMigrator
     {
         $this->idMap[$oldId] = $newId;
     }
-
-} 
+}

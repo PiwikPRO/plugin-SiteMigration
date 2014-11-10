@@ -5,11 +5,9 @@
  *
  * @link http://piwik.pro
  * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
  */
 
 namespace Piwik\Plugins\SiteMigration\Helper;
-
 
 use Piwik\Db;
 
@@ -21,11 +19,10 @@ class DBHelper
 
     protected $inserts = array();
 
-    function __construct(\Zend_Db_Adapter_Abstract $adapter, $config)
+    public function __construct(\Zend_Db_Adapter_Abstract $adapter, $config)
     {
         $this->adapter = $adapter;
         $this->config  = $config;
-
     }
 
     public function getInsertSQL($table, $values)

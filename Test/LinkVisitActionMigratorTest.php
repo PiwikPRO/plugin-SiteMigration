@@ -5,28 +5,21 @@
  *
  * @link http://piwik.pro
  * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
  */
-
 
 namespace Piwik\Plugins\SiteMigration\Test;
 
 use Piwik\Plugins\SiteMigration\Migrator\LinkVisitActionMigrator;
 
 /**
- * Class LinkVisitActionMigratorTest
- * @package Piwik\Plugins\SiteMigration\Test
- *
  * @group SiteMigration
  */
 class LinkVisitActionMigratorTest extends \PHPUnit_Framework_TestCase
 {
-
     /**
      * @var LinkVisitActionMigrator
      */
     protected $linkVisitActionMigrator;
-
 
     /**
      * @var \PHPUnit_Framework_MockObject_MockObject
@@ -64,7 +57,6 @@ class LinkVisitActionMigratorTest extends \PHPUnit_Framework_TestCase
 
     protected function reset()
     {
-
         $this->toDbHelper = $this->getMock(
             'Piwik\Plugins\SiteMigration\Helper\DBHelper',
             array('executeInsert', 'lastInsertId', 'getAdapter', 'prefixTable', 'acquireLock', 'releaseLock'),
@@ -100,7 +92,6 @@ class LinkVisitActionMigratorTest extends \PHPUnit_Framework_TestCase
         $this->gcHelper = $this->getMock('Piwik\Plugins\SiteMigration\Helper\GCHelper', array(), array(), '', false);
 
         $this->linkVisitActionMigrator = new LinkVisitActionMigrator($this->toDbHelper, $this->gcHelper, $this->siteMigrator, $this->visitMigrator, $this->actionMigrator);
-
     }
 
 

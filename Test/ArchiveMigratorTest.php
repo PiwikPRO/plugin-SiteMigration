@@ -5,18 +5,13 @@
  *
  * @link http://piwik.pro
  * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
  */
-
 
 namespace Piwik\Plugins\SiteMigration\Test;
 
 use Piwik\Plugins\SiteMigration\Migrator\ArchiveMigrator;
 
 /**
- * Class ArchiveMigratorTest
- * @package Piwik\Plugins\SiteMigration\Test
- *
  * @group SiteMigration
  */
 class ArchiveMigratorTest extends \PHPUnit_Framework_TestCase

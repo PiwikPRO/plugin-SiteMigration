@@ -5,9 +5,7 @@
  *
  * @link http://piwik.pro
  * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
  */
-
 
 namespace Piwik\Plugins\SiteMigration\Migrator;
 
@@ -31,8 +29,7 @@ class ArchiveMigrator
         DBHelper $fromDb,
         DBHelper $toDb,
         SiteMigrator $siteMigrator
-    )
-    {
+    ) {
         $this->fromDbHelper = $fromDb;
         $this->toDbHelper   = $toDb;
         $this->siteMigrator = $siteMigrator;
@@ -45,7 +42,7 @@ class ArchiveMigrator
 
         array_walk(
             $tables,
-            function (&$value, $key) use ($prefix) {
+            function (&$value) use ($prefix) {
                 $value = str_replace($prefix, '', $value);
             }
         );
@@ -90,7 +87,6 @@ class ArchiveMigrator
         $this->toDbHelper->releaseLock($lockName);
     }
 
-
     protected function ensureTargetTableExists($archive)
     {
         $data = $this->toDbHelper->getAdapter()->fetchCol(
@@ -128,4 +124,4 @@ class ArchiveMigrator
 
         return $data[0];
     }
-} 
+}

@@ -5,7 +5,6 @@
  *
  * @link http://piwik.pro
  * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
  */
 
 namespace Piwik\Plugins\SiteMigration\Commands;
@@ -15,20 +14,10 @@ use Piwik\Db;
 use Piwik\Log;
 use Piwik\Piwik;
 use Piwik\Plugin\ConsoleCommand;
-use Piwik\Plugins\SiteMigration\DataProvider\BatchProvider;
 use Piwik\Plugins\SiteMigration\Helper\DBHelper;
 use Piwik\Plugins\SiteMigration\Helper\GCHelper;
-use Piwik\Plugins\SiteMigration\Migrator\ActionMigrator;
-use Piwik\Plugins\SiteMigration\Migrator\ArchiveMigrator;
-use Piwik\Plugins\SiteMigration\Migrator\ConversionItemMigrator;
-use Piwik\Plugins\SiteMigration\Migrator\ConversionMigrator;
-use Piwik\Plugins\SiteMigration\Migrator\LinkVisitActionMigrator;
 use Piwik\Plugins\SiteMigration\Migrator\MigratorFacade;
 use Piwik\Plugins\SiteMigration\Migrator\MigratorSettings;
-use Piwik\Plugins\SiteMigration\Migrator\SiteGoalMigrator;
-use Piwik\Plugins\SiteMigration\Migrator\SiteMigrator;
-use Piwik\Plugins\SiteMigration\Migrator\SiteUrlMigrator;
-use Piwik\Plugins\SiteMigration\Migrator\VisitMigrator;
 use Piwik\Site;
 use Symfony\Component\Console\Helper\DialogHelper;
 use Symfony\Component\Console\Input\InputArgument;
@@ -36,11 +25,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-
 class MigrateSite extends ConsoleCommand
 {
-
-
     protected function configure()
     {
         $this->setName('migration:site');
@@ -88,13 +74,13 @@ class MigrateSite extends ConsoleCommand
         @ini_set('memory_limit', -1);
         Piwik::setUserHasSuperUserAccess();
 
-        $migratorSettings           = new MigratorSettings();
-        $migratorSettings->idSite   = $input->getArgument('idSite');
-        $migratorSettings->site     = $this->getSite($migratorSettings->idSite);
+        $migratorSettings = new MigratorSettings();
+        $migratorSettings->idSite = $input->getArgument('idSite');
+        $migratorSettings->site = $this->getSite($migratorSettings->idSite);
         $migratorSettings->dateFrom = ($input->getOption('date-from')) ? new \DateTime($input->getOption('date-from')) : null;
-        $migratorSettings->dateTo   = ($input->getOption('date-to')) ? new \DateTime($input->getOption('date-to')) : null;
-        $config                     = Db::getDatabaseConfig();
-        $startTime                  = microtime(true);
+        $migratorSettings->dateTo = ($input->getOption('date-to')) ? new \DateTime($input->getOption('date-to')) : null;
+        $config = Db::getDatabaseConfig();
+        $startTime = microtime(true);
 
         try {
             $this->createDestinationDatabaseConfig($input, $output, $config);
@@ -103,9 +89,9 @@ class MigrateSite extends ConsoleCommand
             return;
         }
 
-        $tmpConfig                    = $config;
+        $tmpConfig = $config;
         $fromDb = Db::get();
-        $toDb   = @Db\Adapter::factory($config['adapter'], $tmpConfig);
+        $toDb = @Db\Adapter::factory($config['adapter'], $tmpConfig);
 
         if ($output->getVerbosity() == OutputInterface::VERBOSITY_VERBOSE) {
             Log::getInstance()->setLogLevel(Log::INFO);
@@ -200,7 +186,7 @@ class MigrateSite extends ConsoleCommand
             $notNullValidator
         );
 
-        $config['port']          = $input->getOption('db-port');
+        $config['port'] = $input->getOption('db-port');
         $config['tables_prefix'] = $input->getOption('db-prefix');
     }
 
@@ -225,7 +211,7 @@ class MigrateSite extends ConsoleCommand
         /**
          * @var $dialog DialogHelper
          */
-        $dialog   = $this->getHelperSet()->get('dialog');
+        $dialog = $this->getHelperSet()->get('dialog');
         $question = '<question>' . $question . (($default) ? " [$default]" : '') . ':</question> ';
 
         if (!$hidden) {
@@ -246,5 +232,4 @@ class MigrateSite extends ConsoleCommand
             );
         }
     }
-
 }

@@ -5,9 +5,7 @@
  *
  * @link http://piwik.pro
  * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
  */
-
 
 namespace Piwik\Plugins\SiteMigration\Test;
 
@@ -81,7 +79,6 @@ class DBHelperTest extends \PHPUnit_Framework_TestCase
         );
 
         $this->assertEquals($sql, $this->dbHelper->getInsertSQL('table', $values));
-
     }
 
     public function test_executeInsert()

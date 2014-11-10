@@ -5,23 +5,17 @@
  *
  * @link http://piwik.pro
  * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
  */
-
 
 namespace Piwik\Plugins\SiteMigration\Test;
 
 use Piwik\Plugins\SiteMigration\Migrator\ConversionItemMigrator;
 
 /**
- * Class ConversionItemMigratorTest
- * @package Piwik\Plugins\SiteMigration\Test
- *
  * @group SiteMigration
  */
 class ConversionItemMigratorTest extends \PHPUnit_Framework_TestCase
 {
-
     /**
      * @var ConversionItemMigrator
      */
@@ -42,12 +36,10 @@ class ConversionItemMigratorTest extends \PHPUnit_Framework_TestCase
      */
     protected $siteMigrator;
 
-
     /**
      * @var \PHPUnit_Framework_MockObject_MockObject
      */
     protected $visitMigrator;
-
 
     /**
      * @var \PHPUnit_Framework_MockObject_MockObject
@@ -113,7 +105,6 @@ class ConversionItemMigratorTest extends \PHPUnit_Framework_TestCase
         $this->gcHelper = $this->getMock('Piwik\Plugins\SiteMigration\Helper\GCHelper', array(), array(), '', false);
 
         $this->conversionItemMigrator = new ConversionItemMigrator($this->toDbHelper, $this->gcHelper, $this->siteMigrator, $this->visitMigrator, $this->actionMigrator);
-
     }
 
     public function test_migrateConversionItems()
@@ -144,5 +135,4 @@ class ConversionItemMigratorTest extends \PHPUnit_Framework_TestCase
 
         $this->conversionItemMigrator->migrate(new \ArrayIterator(array($conversionItem)));
     }
-
 }

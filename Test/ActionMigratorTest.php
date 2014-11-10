@@ -8,16 +8,11 @@
  *
  */
 
-
 namespace Piwik\Plugins\SiteMigration\Test;
-
 
 use Piwik\Plugins\SiteMigration\Migrator\ActionMigrator;
 
 /**
- * Class ActionMigratorTest
- * @package Piwik\Plugins\SiteMigration\Test
- *
  * @group SiteMigration
  */
 class ActionMigratorTest extends \PHPUnit_Framework_TestCase

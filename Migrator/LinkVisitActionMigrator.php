@@ -1,15 +1,19 @@
 <?php
-
+/**
+ * Piwik PRO - cloud hosting and enterprise analytics consultancy
+ * from the creators of Piwik.org
+ *
+ * @link http://piwik.pro
+ * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ */
 
 namespace Piwik\Plugins\SiteMigration\Migrator;
-
 
 use Piwik\Plugins\SiteMigration\Helper\DBHelper;
 use Piwik\Plugins\SiteMigration\Helper\GCHelper;
 
 class LinkVisitActionMigrator extends Migrator
 {
-
     /**
      * @var Migrator
      */
@@ -25,8 +29,13 @@ class LinkVisitActionMigrator extends Migrator
      */
     protected $actionMigrator;
 
-    public function __construct(DBHelper $toDbHelper, GCHelper $gcHelper, Migrator $siteMigrator, Migrator $visitMigrator, ActionMigrator $actionMigrator)
-    {
+    public function __construct(
+        DBHelper $toDbHelper,
+        GCHelper $gcHelper,
+        Migrator $siteMigrator,
+        Migrator $visitMigrator,
+        ActionMigrator $actionMigrator
+    ) {
         $this->siteMigrator   = $siteMigrator;
         $this->visitMigrator  = $visitMigrator;
         $this->actionMigrator = $actionMigrator;
@@ -67,5 +76,4 @@ class LinkVisitActionMigrator extends Migrator
     {
         return $row['idlink_va'];
     }
-
 }

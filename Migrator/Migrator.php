@@ -1,20 +1,25 @@
 <?php
-
+/**
+ * Piwik PRO - cloud hosting and enterprise analytics consultancy
+ * from the creators of Piwik.org
+ *
+ * @link http://piwik.pro
+ * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ */
 
 namespace Piwik\Plugins\SiteMigration\Migrator;
-
 
 use Piwik\Plugins\SiteMigration\Exception\MissingIDTranslationException;
 use Piwik\Plugins\SiteMigration\Helper\DBHelper;
 use Piwik\Plugins\SiteMigration\Helper\GCHelper;
 
 /**
- * Class Migrator - base class for all migrators. Contains common used methods
- * @package Piwik\Plugins\SiteMigration\Migrator
+ * Base class for all migrators.
+ *
+ * Contains common used methods.
  */
 abstract class Migrator
 {
-
     protected $skipped = 0;
 
     /**
@@ -79,7 +84,6 @@ abstract class Migrator
 
     public function checkColumns()
     {
-
     }
 
     protected abstract function translateRow(&$row);
@@ -95,5 +99,4 @@ abstract class Migrator
      * @return int  The current id stored in the given row
      */
     protected abstract function getIdFromRow(&$row);
-
-} 
+}

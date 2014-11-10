@@ -5,23 +5,17 @@
  *
  * @link http://piwik.pro
  * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
- *
  */
-
 
 namespace Piwik\Plugins\SiteMigration\Test;
 
 use Piwik\Plugins\SiteMigration\Migrator\VisitMigrator;
 
 /**
- * Class VisitMigratorTest
- * @package Piwik\Plugins\SiteMigration\Test
- *
  * @group SiteMigration
  */
 class VisitMigratorTest extends \PHPUnit_Framework_TestCase
 {
-
     /**
      * @var VisitMigrator
      */
@@ -53,7 +47,6 @@ class VisitMigratorTest extends \PHPUnit_Framework_TestCase
     protected $siteMigrator;
 
     protected $gcHelper;
-
 
     public function setUp()
     {
@@ -109,7 +102,6 @@ class VisitMigratorTest extends \PHPUnit_Framework_TestCase
         $this->gcHelper = $this->getMock('Piwik\Plugins\SiteMigration\Helper\GCHelper', array(), array(), '', false);
 
         $this->visitMigrator = new VisitMigrator($this->toDbHelper, $this->gcHelper, $this->siteMigrator, $this->actionMigrator);
-
     }
 
     public function test_migrateVisits()
@@ -121,11 +113,9 @@ class VisitMigratorTest extends \PHPUnit_Framework_TestCase
             'visit_exit_idaction_name'  => 6,
             'visit_entry_idaction_url'  => 8,
             'visit_entry_idaction_name' => 10,
-
         );
 
         $batchProvider = new \ArrayIterator(array($visit));
-
 
         $this->toDbHelper->expects($this->once())->method('executeInsert')->with('log_visit', $this->anything());
         $this->toDbHelper->expects($this->once())->method('lastInsertId')->will($this->returnValue(321));
@@ -138,7 +128,6 @@ class VisitMigratorTest extends \PHPUnit_Framework_TestCase
         $this->visitMigrator->migrate($batchProvider);
 
         $this->assertEquals(321, $this->visitMigrator->getNewId(123));
-
     }
 
     protected function setupDbHelperGetAdapter(\PHPUnit_Framework_MockObject_MockObject $adapter)
@@ -147,5 +136,4 @@ class VisitMigratorTest extends \PHPUnit_Framework_TestCase
             $this->returnValue($this->adapter)
         );
     }
-
 }
