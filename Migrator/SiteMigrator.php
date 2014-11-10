@@ -9,7 +9,7 @@
 
 namespace Piwik\Plugins\SiteMigration\Migrator;
 
-class SiteMigrator extends Migrator
+class SiteMigrator extends TableMigrator
 {
     protected function getTableName()
     {

@@ -16,7 +16,7 @@ use Piwik\Piwik;
 use Piwik\Plugin\ConsoleCommand;
 use Piwik\Plugins\SiteMigration\Helper\DBHelper;
 use Piwik\Plugins\SiteMigration\Helper\GCHelper;
-use Piwik\Plugins\SiteMigration\Migrator\MigratorFacade;
+use Piwik\Plugins\SiteMigration\Migrator\Migrator;
 use Piwik\Plugins\SiteMigration\Migrator\MigratorSettings;
 use Piwik\Site;
 use Symfony\Component\Console\Helper\DialogHelper;
@@ -105,7 +105,7 @@ class MigrateSite extends ConsoleCommand
             Log::getInstance()->setLogLevel(Log::VERBOSE);
         }
 
-        $migratorFacade = new MigratorFacade(
+        $migratorFacade = new Migrator(
             new DBHelper($sourceDb, Db::getDatabaseConfig()),
             new DBHelper($targetDb, $config),
             GCHelper::getInstance(),

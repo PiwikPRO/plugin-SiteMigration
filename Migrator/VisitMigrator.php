@@ -12,7 +12,7 @@ namespace Piwik\Plugins\SiteMigration\Migrator;
 use Piwik\Plugins\SiteMigration\Helper\DBHelper;
 use Piwik\Plugins\SiteMigration\Helper\GCHelper;
 
-class VisitMigrator extends Migrator
+class VisitMigrator extends TableMigrator
 {
     /**
      * @var ActionMigrator
@@ -20,11 +20,11 @@ class VisitMigrator extends Migrator
     protected $actionMigrator;
 
     /**
-     * @var Migrator
+     * @var TableMigrator
      */
     protected $siteMigrator;
 
-    public function __construct(DBHelper $targetDb, GCHelper $gcHelper, Migrator $siteMigrator, ActionMigrator $actionMigrator)
+    public function __construct(DBHelper $targetDb, GCHelper $gcHelper, TableMigrator $siteMigrator, ActionMigrator $actionMigrator)
     {
         $this->actionMigrator = $actionMigrator;
         $this->siteMigrator   = $siteMigrator;
