@@ -8,22 +8,18 @@ Migrate websites and website data between two Piwik installations.
 
 ## Usage
 
-Migration can be started from CLI by typing
-`./console migration:site idSite`
-There is only one argument: idSite. Before migrating data the command will ask for new database credentials. Please provide all necessary credentials to the destination database.
+Migration can be started from CLI by running `./console migration:site idSite`. The command will ask for the credentials to the target database.
 
-Please run
-`./console migration:site --help`
-To get a full list of options.
+You can run `./console migration:site --help` to get a full list of options.
  
 ```
-__Usage:__
+Usage:
  migration:site [--skip-archived] [--skip-log-data] [-H|--host="..."] [-U|--username="..."] [-P|--password="..."] [-N|--dbname="..."] [--prefix="..."] [--port="..."] [-F|--date-from="..."] [-T|--date-to="..."] [-I|--new-id-site="..."] idSite
 
-__Arguments:__
+Arguments:
  idSite                Site id
 
-__Options:__
+Options:
  --skip-archive-data   Skip migration of archive data
  --skip-log-data       Skip migration of log data
  --host (-H)           Destination database host
@@ -44,30 +40,34 @@ __Options:__
  --no-interaction (-n) Do not ask any interactive question.
  --piwik-domain        Piwik URL (protocol and domain) eg. "http://piwik.example.org"
 ```
+
 ## FAQ
 
-__How can I migrate site data between two dates?__
-You can use command options: --date-from and --date-to
+**How can I migrate site data between two dates?**
 
-__How can I migrate site data to an existing page?__
-Please make sure that the config of the new site id is present and it is in sync with the config of the old file (custom vars, goals, etc).
-Please check also if the site log is empty (both log and archive).
+You can use command options: `--date-from` and `--date-to`.
 
-If both above conditions are met run the migrate:site command with the -I|--new-site-id param - this will skip config migration and will go straightly to log data log and archive migration.
+**How can I migrate site data to an existing page?**
 
-__How can I skip migrating archived data?__
-Just add the "--skip-archived" option.
+Make sure that the config of the new site id is present and it is in sync with the config of the old file (custom vars, goals, etc). Check also if the site log is empty (both log and archive).
+
+If both conditions are met, run the `migrate:site` command with the `-I|--new-site-id` param. This will skip config migration and will go straightly to log data and archive migration.
+
+**How can I skip migrating archived data?**
+
+Just add the `--skip-archived` option.
 
 ## Changelog
 
-__v0.1.1__
+**v0.1.1**
+
 - Changed license to free plugin
 - Changed name to SiteMigration
 
-__v0.1.0__
+**v0.1.0**
+
 - Initial release
 
-## Contributors
+## Credits
 
 Created by [Piwik PRO](http://piwik.pro/)
-
