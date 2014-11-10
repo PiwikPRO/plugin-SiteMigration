@@ -24,11 +24,11 @@ class VisitMigrator extends Migrator
      */
     protected $siteMigrator;
 
-    public function __construct(DBHelper $toDbHelper, GCHelper $gcHelper, Migrator $siteMigrator, ActionMigrator $actionMigrator)
+    public function __construct(DBHelper $targetDb, GCHelper $gcHelper, Migrator $siteMigrator, ActionMigrator $actionMigrator)
     {
         $this->actionMigrator = $actionMigrator;
         $this->siteMigrator   = $siteMigrator;
-        parent::__construct($toDbHelper, $gcHelper);
+        parent::__construct($targetDb, $gcHelper);
     }
 
     protected function getTableName()

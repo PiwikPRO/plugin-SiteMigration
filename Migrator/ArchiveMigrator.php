@@ -16,29 +16,35 @@ use Piwik\Plugins\SiteMigration\Helper\DBHelper;
 
 class ArchiveMigrator
 {
-    protected $fromDbHelper;
+    /**
+     * @var DBHelper
+     */
+    private $sourceDb;
 
-    protected $toDbHelper;
+    /**
+     * @var DBHelper
+     */
+    private $targetDb;
 
     /**
      * @var SiteMigrator
      */
-    protected $siteMigrator;
+    private $siteMigrator;
 
     public function __construct(
-        DBHelper $fromDb,
-        DBHelper $toDb,
+        DBHelper $sourceDb,
+        DBHelper $targetDb,
         SiteMigrator $siteMigrator
     ) {
-        $this->fromDbHelper = $fromDb;
-        $this->toDbHelper   = $toDb;
+        $this->sourceDb = $sourceDb;
+        $this->targetDb = $targetDb;
         $this->siteMigrator = $siteMigrator;
     }
 
     public function getArchiveList($dateFrom = null, $dateTo = null)
     {
-        $tables = $this->fromDbHelper->getAdapter()->fetchCol("SHOW TABLES LIKE '" . $this->fromDbHelper->prefixTable('archive_') . "%'");
-        $prefix = $this->fromDbHelper->prefixTable('');
+        $tables = $this->sourceDb->getAdapter()->fetchCol("SHOW TABLES LIKE '" . $this->sourceDb->prefixTable('archive_') . "%'");
+        $prefix = $this->sourceDb->prefixTable('');
 
         array_walk(
             $tables,
@@ -71,52 +77,52 @@ class ArchiveMigrator
         }
     }
 
-    protected function processArchive($archive, $record)
+    private function processArchive($archive, $record)
     {
         $lockName = 'allocateNewarchiveId.' . $archive;
 
-        $this->toDbHelper->acquireLock($lockName);
+        $this->targetDb->acquireLock($lockName);
 
         $id = $this->getNextArchiveId($archive, $record['name']);
 
         $record['idarchive'] = $id;
         $record['idsite']    = $this->siteMigrator->getNewId($record['idsite']);
 
-        $this->toDbHelper->executeInsert($archive, $record);
+        $this->targetDb->executeInsert($archive, $record);
 
-        $this->toDbHelper->releaseLock($lockName);
+        $this->targetDb->releaseLock($lockName);
     }
 
-    protected function ensureTargetTableExists($archive)
+    private function ensureTargetTableExists($archive)
     {
-        $data = $this->toDbHelper->getAdapter()->fetchCol(
-            "SHOW TABLES LIKE '" . $this->toDbHelper->prefixTable($archive) . "'"
+        $data = $this->targetDb->getAdapter()->fetchCol(
+            "SHOW TABLES LIKE '" . $this->targetDb->prefixTable($archive) . "'"
         );
 
         if (count($data) == 0) {
             $tableType = (strpos($archive, 'blob')) ? 'archive_blob' : 'archive_numeric';
             $sql       = PiwikDbHelper::getTableCreateSql($tableType);
             $sql       = str_replace($tableType, $archive, $sql);
-            $sql       = str_replace($this->fromDbHelper->prefixTable(''), $this->toDbHelper->prefixTable(''), $sql);
+            $sql       = str_replace($this->sourceDb->prefixTable(''), $this->targetDb->prefixTable(''), $sql);
 
-            $this->toDbHelper->getAdapter()->query($sql);
+            $this->targetDb->getAdapter()->query($sql);
         }
     }
 
-    protected function getArchiveRecordsQuery($archive, $idSite)
+    private function getArchiveRecordsQuery($archive, $idSite)
     {
-        $query = $this->fromDbHelper->getAdapter()->prepare(
-            'SELECT * FROM ' . $this->fromDbHelper->prefixTable($archive) . ' WHERE idsite = ?'
+        $query = $this->sourceDb->getAdapter()->prepare(
+            'SELECT * FROM ' . $this->sourceDb->prefixTable($archive) . ' WHERE idsite = ?'
         );
         $query->execute(array($idSite));
 
         return $query;
     }
 
-    protected function getNextArchiveId($archive, $name)
+    private function getNextArchiveId($archive, $name)
     {
-        $data = $this->toDbHelper->getAdapter()->fetchCol(
-            'SELECT IFNULL(MAX(idarchive), 0) + 1 FROM ' . $this->toDbHelper->prefixTable(
+        $data = $this->targetDb->getAdapter()->fetchCol(
+            'SELECT IFNULL(MAX(idarchive), 0) + 1 FROM ' . $this->targetDb->prefixTable(
                 $archive
             ) . ' WHERE name = :name',
             array('name' => $name)

@@ -30,7 +30,7 @@ class LinkVisitActionMigrator extends Migrator
     protected $actionMigrator;
 
     public function __construct(
-        DBHelper $toDbHelper,
+        DBHelper $targetDb,
         GCHelper $gcHelper,
         Migrator $siteMigrator,
         Migrator $visitMigrator,
@@ -40,7 +40,7 @@ class LinkVisitActionMigrator extends Migrator
         $this->visitMigrator  = $visitMigrator;
         $this->actionMigrator = $actionMigrator;
 
-        parent::__construct($toDbHelper, $gcHelper);
+        parent::__construct($targetDb, $gcHelper);
     }
 
 

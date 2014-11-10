@@ -13,18 +13,18 @@ use Piwik\Plugins\SiteMigration\Helper\DBHelper;
 
 class ActionMigrator
 {
-    protected $fromDbHelper;
+    protected $sourceDb;
 
-    protected $toDbHelper;
+    protected $targetDb;
 
     protected $existingActions = array();
 
     protected $idMap = array();
 
-    public function __construct(DBHelper $fromDb, DBHelper $toDb)
+    public function __construct(DBHelper $sourceDb, DBHelper $targetDb)
     {
-        $this->fromDbHelper = $fromDb;
-        $this->toDbHelper = $toDb;
+        $this->sourceDb = $sourceDb;
+        $this->targetDb = $targetDb;
     }
 
     protected function processAction($action)
@@ -39,15 +39,15 @@ class ActionMigrator
 
         $idAction = $action['idaction'];
         unset($action['idaction']);
-        $this->toDbHelper->executeInsert('log_action', $action);
-        $this->idMap[$idAction] = $this->toDbHelper->lastInsertId();
+        $this->targetDb->executeInsert('log_action', $action);
+        $this->idMap[$idAction] = $this->targetDb->lastInsertId();
         unset($action);
     }
 
     public function loadExistingActions()
     {
-        $query = $this->toDbHelper->getAdapter()->prepare(
-            'SELECT idaction, hash, type FROM ' . $this->toDbHelper->prefixTable('log_action')
+        $query = $this->targetDb->getAdapter()->prepare(
+            'SELECT idaction, hash, type FROM ' . $this->targetDb->prefixTable('log_action')
         );
         $query->execute();
 
@@ -72,8 +72,8 @@ class ActionMigrator
         if (array_key_exists($idAction, $this->idMap)) {
             return true;
         } else {
-            $action = $this->fromDbHelper->getAdapter()->fetchRow(
-                'SELECT * FROM ' . $this->fromDbHelper->prefixTable('log_action') . ' WHERE idaction = ?',
+            $action = $this->sourceDb->getAdapter()->fetchRow(
+                'SELECT * FROM ' . $this->sourceDb->prefixTable('log_action') . ' WHERE idaction = ?',
                 array($idAction)
             );
 

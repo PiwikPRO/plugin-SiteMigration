@@ -19,13 +19,12 @@ class SiteUrlMigrator extends Migrator
      */
     protected $siteMigrator;
 
-    public function __construct(DBHelper $toDbHelper, GCHelper $gcHelper, Migrator $siteMigrator)
+    public function __construct(DBHelper $targetDb, GCHelper $gcHelper, Migrator $siteMigrator)
     {
         $this->siteMigrator = $siteMigrator;
 
-        parent::__construct($toDbHelper, $gcHelper);
+        parent::__construct($targetDb, $gcHelper);
     }
-
 
     protected function translateRow(&$row)
     {

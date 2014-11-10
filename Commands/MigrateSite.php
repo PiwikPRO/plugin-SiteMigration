@@ -90,8 +90,8 @@ class MigrateSite extends ConsoleCommand
         }
 
         $tmpConfig = $config;
-        $fromDb = Db::get();
-        $toDb = @Db\Adapter::factory($config['adapter'], $tmpConfig);
+        $sourceDb = Db::get();
+        $targetDb = @Db\Adapter::factory($config['adapter'], $tmpConfig);
 
         if ($output->getVerbosity() == OutputInterface::VERBOSITY_VERBOSE) {
             Log::getInstance()->setLogLevel(Log::INFO);
@@ -102,10 +102,9 @@ class MigrateSite extends ConsoleCommand
         }
 
         $migratorFacade = new MigratorFacade(
-            $fromDb,
-            new DBHelper($fromDb, Db::getDatabaseConfig()),
-            $toDb,
-            new DBHelper($toDb, $config),
+            new DBHelper($sourceDb, Db::getDatabaseConfig()),
+            $targetDb,
+            new DBHelper($targetDb, $config),
             GCHelper::getInstance(),
             $migratorSettings
         );

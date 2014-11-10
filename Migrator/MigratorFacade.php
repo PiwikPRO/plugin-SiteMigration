@@ -19,100 +19,95 @@ class MigratorFacade
     /**
      * @var \Zend_Db_Adapter_Abstract
      */
-    protected $fromDb;
-    /**
-     * @var \Zend_Db_Adapter_Abstract
-     */
-    protected $toDb;
+    private $targetDb;
     /**
      * @var DBHelper
      */
-    protected $toDbHelper;
+    private $targetDbHelper;
     /**
      * @var DBHelper
      */
-    protected $fromDbHelper;
+    private $sourceDbHelper;
     /**
      * @var GCHelper
      */
-    protected $gcHelper;
+    private $gcHelper;
     /**
      * @var SiteMigrator
      */
-    protected $siteMigrator;
+    private $siteMigrator;
     /**
      * @var SiteGoalMigrator
      */
-    protected $siteGoalMigrator;
+    private $siteGoalMigrator;
     /**
      * @var SiteUrlMigrator
      */
-    protected $siteUrlMigrator;
+    private $siteUrlMigrator;
     /**
      * @var ActionMigrator
      */
-    protected $actionMigrator;
+    private $actionMigrator;
     /**
      * @var VisitMigrator
      */
-    protected $visitMigrator;
+    private $visitMigrator;
     /**
      * @var LinkVisitActionMigrator
      */
-    protected $visitActionMigrator;
+    private $visitActionMigrator;
     /**
      * @var ConversionMigrator
      */
-    protected $conversionMigrator;
+    private $conversionMigrator;
     /**
      * @var ConversionItemMigrator
      */
-    protected $conversionItemMigrator;
+    private $conversionItemMigrator;
     /**
      * @var ArchiveMigrator
      */
-    protected $archiveMigrator;
+    private $archiveMigrator;
 
     /**
      * @var MigratorSettings
      */
-    protected $migratorSettings;
+    private $migratorSettings;
 
-    function __construct($fromDb, $fromDbHelper, $toDb, $toDbHelper, $gcHelper, $migratorSettings)
+    function __construct(DBHelper $sourceDbHelper, $targetDb, $targetDbHelper, $gcHelper, $migratorSettings)
     {
-        $this->fromDb           = $fromDb;
-        $this->fromDbHelper     = $fromDbHelper;
+        $this->sourceDbHelper   = $sourceDbHelper;
         $this->gcHelper         = $gcHelper;
         $this->migratorSettings = $migratorSettings;
-        $this->toDb             = $toDb;
-        $this->toDbHelper       = $toDbHelper;
+        $this->targetDb         = $targetDb;
+        $this->targetDbHelper   = $targetDbHelper;
 
         $this->setupMigrators();
     }
 
-    protected function setupMigrators()
+    private function setupMigrators()
     {
-        $this->siteMigrator           = new SiteMigrator($this->toDbHelper, $this->gcHelper);
-        $this->siteGoalMigrator       = new SiteGoalMigrator($this->toDbHelper, $this->gcHelper, $this->siteMigrator);
-        $this->siteUrlMigrator        = new SiteUrlMigrator($this->toDbHelper, $this->gcHelper, $this->siteMigrator);
-        $this->actionMigrator         = new ActionMigrator($this->fromDbHelper, $this->toDbHelper);
-        $this->visitMigrator          = new VisitMigrator($this->toDbHelper, $this->gcHelper, $this->siteMigrator, $this->actionMigrator);
-        $this->visitActionMigrator    = new LinkVisitActionMigrator($this->toDbHelper, $this->gcHelper, $this->siteMigrator, $this->visitMigrator, $this->actionMigrator);
-        $this->conversionMigrator     = new ConversionMigrator($this->toDbHelper, $this->gcHelper, $this->siteMigrator, $this->visitMigrator, $this->actionMigrator, $this->visitActionMigrator);
-        $this->conversionItemMigrator = new ConversionItemMigrator($this->toDbHelper, $this->gcHelper, $this->siteMigrator, $this->visitMigrator, $this->actionMigrator);
-        $this->archiveMigrator        = new ArchiveMigrator($this->fromDbHelper, $this->toDbHelper, $this->siteMigrator);
+        $this->siteMigrator           = new SiteMigrator($this->targetDbHelper, $this->gcHelper);
+        $this->siteGoalMigrator       = new SiteGoalMigrator($this->targetDbHelper, $this->gcHelper, $this->siteMigrator);
+        $this->siteUrlMigrator        = new SiteUrlMigrator($this->targetDbHelper, $this->gcHelper, $this->siteMigrator);
+        $this->actionMigrator         = new ActionMigrator($this->sourceDbHelper, $this->targetDbHelper);
+        $this->visitMigrator          = new VisitMigrator($this->targetDbHelper, $this->gcHelper, $this->siteMigrator, $this->actionMigrator);
+        $this->visitActionMigrator    = new LinkVisitActionMigrator($this->targetDbHelper, $this->gcHelper, $this->siteMigrator, $this->visitMigrator, $this->actionMigrator);
+        $this->conversionMigrator     = new ConversionMigrator($this->targetDbHelper, $this->gcHelper, $this->siteMigrator, $this->visitMigrator, $this->actionMigrator, $this->visitActionMigrator);
+        $this->conversionItemMigrator = new ConversionItemMigrator($this->targetDbHelper, $this->gcHelper, $this->siteMigrator, $this->visitMigrator, $this->actionMigrator);
+        $this->archiveMigrator        = new ArchiveMigrator($this->sourceDbHelper, $this->targetDbHelper, $this->siteMigrator);
     }
 
     public function startTransaction()
     {
         Log::warning('Start transaction');
-        $this->toDb->beginTransaction();
+        $this->targetDb->beginTransaction();
     }
 
     public function commitTransaction()
     {
         Log::warning('Commit transaction');
-        $this->toDb->commit();
+        $this->targetDb->commit();
     }
 
     public function migrate()
@@ -140,41 +135,41 @@ class MigratorFacade
         $this->commitTransaction();
     }
 
-    protected function migrateSiteConfig()
+    private function migrateSiteConfig()
     {
         Log::warning('Migrating site config');
 
         $this->siteMigrator->migrate(
             $this->getBatchProvider(
-                'SELECT * FROM ' . $this->fromDbHelper->prefixTable('site') . ' WHERE idsite = ' . $this->migratorSettings->idSite
+                'SELECT * FROM ' . $this->sourceDbHelper->prefixTable('site') . ' WHERE idsite = ' . $this->migratorSettings->idSite
             )
         );
 
         $this->siteGoalMigrator->migrate(
             $this->getBatchProvider(
-                'SELECT * FROM ' . $this->fromDbHelper->prefixTable('goal') . ' WHERE idsite = ' . $this->migratorSettings->idSite
+                'SELECT * FROM ' . $this->sourceDbHelper->prefixTable('goal') . ' WHERE idsite = ' . $this->migratorSettings->idSite
             )
         );
 
         $this->siteUrlMigrator->migrate(
             $this->getBatchProvider(
-                'SELECT * FROM ' . $this->fromDbHelper->prefixTable('site_url') . ' WHERE idsite = ' . $this->migratorSettings->idSite
+                'SELECT * FROM ' . $this->sourceDbHelper->prefixTable('site_url') . ' WHERE idsite = ' . $this->migratorSettings->idSite
             )
         );
     }
 
-    protected function loadActions()
+    private function loadActions()
     {
         Log::warning('Loading existing actions');
 
         $this->actionMigrator->loadExistingActions();
     }
 
-    protected function migrateLogVisits()
+    private function migrateLogVisits()
     {
         Log::warning('Migrating log data - visits');
 
-        $query = 'SELECT * FROM ' . $this->fromDbHelper->prefixTable('log_visit') . ' WHERE idsite = ' . $this->migratorSettings->idSite;
+        $query = 'SELECT * FROM ' . $this->sourceDbHelper->prefixTable('log_visit') . ' WHERE idsite = ' . $this->migratorSettings->idSite;
 
         if ($this->migratorSettings->dateFrom) {
             $query .= ' AND `visit_last_action_time` >= \'' . $this->migratorSettings->dateFrom->format('Y-m-d') . '\'';
@@ -189,7 +184,7 @@ class MigratorFacade
         );
     }
 
-    protected function migrateLogVisitActions()
+    private function migrateLogVisitActions()
     {
         Log::warning('Migrating log data - link visit action');
 
@@ -200,7 +195,7 @@ class MigratorFacade
         }
     }
 
-    protected function migrateLogVisitConversions()
+    private function migrateLogVisitConversions()
     {
         Log::warning('Migrating log data - conversions and conversion items');
 
@@ -213,7 +208,7 @@ class MigratorFacade
         }
     }
 
-    protected function migrateArchives()
+    private function migrateArchives()
     {
         Log::warning('Migrating archive data');
 
@@ -225,12 +220,12 @@ class MigratorFacade
         }
     }
 
-    protected function getLogVisitQueriesFor($table)
+    private function getLogVisitQueriesFor($table)
     {
         $visitIdRanges = $this->visitMigrator->getIdRanges();
 
         if (count($visitIdRanges) > 0) {
-            $baseQuery = "SELECT * FROM " . $this->fromDbHelper->prefixTable($table) . ' WHERE idvisit IN ';
+            $baseQuery = "SELECT * FROM " . $this->sourceDbHelper->prefixTable($table) . ' WHERE idvisit IN ';
             $queries   = array();
 
 
@@ -244,8 +239,8 @@ class MigratorFacade
         }
     }
 
-    protected function getBatchProvider($query)
+    private function getBatchProvider($query)
     {
-        return new BatchProvider($query, $this->fromDbHelper, $this->gcHelper, 10000);
+        return new BatchProvider($query, $this->sourceDbHelper, $this->gcHelper, 10000);
     }
 }

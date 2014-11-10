@@ -40,7 +40,7 @@ class ConversionItemMigrator extends Migrator
     );
 
     public function __construct(
-        DBHelper $toDbHelper,
+        DBHelper $targetDb,
         GCHelper $gcHelper,
         Migrator $siteMigrator,
         Migrator $visitMigrator,
@@ -50,7 +50,7 @@ class ConversionItemMigrator extends Migrator
         $this->visitMigrator  = $visitMigrator;
         $this->actionMigrator = $actionMigrator;
 
-        parent::__construct($toDbHelper, $gcHelper);
+        parent::__construct($targetDb, $gcHelper);
     }
 
     protected function translateRow(&$row)

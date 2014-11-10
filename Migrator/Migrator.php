@@ -25,16 +25,22 @@ abstract class Migrator
     /**
      * @var DBHelper
      */
-    protected $toDbHelper;
+    protected $targetDb;
 
+    /**
+     * @var GCHelper
+     */
     protected $gcHelper;
 
+    /**
+     * @var int[]
+     */
     protected $idMap = array();
 
-    public function __construct(DBHelper $toDbHelper, GCHelper $gcHelper)
+    public function __construct(DBHelper $targetDb, GCHelper $gcHelper)
     {
-        $this->toDbHelper = $toDbHelper;
-        $this->gcHelper   = $gcHelper;
+        $this->targetDb = $targetDb;
+        $this->gcHelper = $gcHelper;
     }
 
     public function migrate(\Traversable $dataProvider)
@@ -49,13 +55,17 @@ abstract class Migrator
         $id = $this->getIdFromRow($row);
         $this->translateRow($row);
 
-        $this->toDbHelper->executeInsert($this->getTableName(), $row);
+        $this->targetDb->executeInsert($this->getTableName(), $row);
 
         if ($id != null) {
-            $this->addNewId($id, $this->toDbHelper->lastInsertId());
+            $this->addNewId($id, $this->targetDb->lastInsertId());
         }
     }
 
+    /**
+     * @param int $oldId
+     * @return int
+     */
     public function getNewId($oldId)
     {
         if (!array_key_exists($oldId, $this->idMap)) {
@@ -75,7 +85,7 @@ abstract class Migrator
     }
 
     /**
-     * @return array
+     * @return int[]
      */
     public function getIdMap()
     {
