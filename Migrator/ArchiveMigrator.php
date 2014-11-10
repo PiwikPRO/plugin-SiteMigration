@@ -41,7 +41,7 @@ class ArchiveMigrator
         $this->siteMigrator = $siteMigrator;
     }
 
-    public function getArchiveList($dateFrom = null, $dateTo = null)
+    public function getArchiveList(\DateTime $dateFrom = null, \DateTime $dateTo = null)
     {
         $tables = $this->sourceDb->getAdapter()->fetchCol("SHOW TABLES LIKE '" . $this->sourceDb->prefixTable('archive_') . "%'");
         $prefix = $this->sourceDb->prefixTable('');

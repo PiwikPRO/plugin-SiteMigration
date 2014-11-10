@@ -31,8 +31,14 @@ class MigratorSettings
 
     public $dbPort;
 
+    /**
+     * @var \DateTime|null
+     */
     public $dateFrom;
 
+    /**
+     * @var \DateTime|null
+     */
     public $dateTo;
 
     public $newIdSite;
