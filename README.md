@@ -52,6 +52,11 @@ Just add the `--skip-archive-data` option.
 
 ## Changelog
 
+**v1.0.0**
+
+- First stable release
+- Bugfixes
+
 **v0.1.1**
 
 - Changed license to free plugin
