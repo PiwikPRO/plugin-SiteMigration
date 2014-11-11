@@ -1,6 +1,6 @@
 {
     "name": "SiteMigration",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "description": "Migrate site and site data between Piwik installations",
     "homepage": "https://github.com/PiwikPRO/plugin-SiteMigration",
     "theme": false,
