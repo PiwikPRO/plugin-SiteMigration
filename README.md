@@ -14,7 +14,7 @@ You can run `./console migration:site --help` to get a full list of options.
  
 ```
 Usage:
- migration:site [--skip-archived] [--skip-log-data] [-H|--host="..."] [-U|--username="..."] [-P|--password="..."] [-N|--dbname="..."] [--prefix="..."] [--port="..."] [-F|--date-from="..."] [-T|--date-to="..."] [-I|--new-id-site="..."] idSite
+ migration:site [--skip-archive-data] [--skip-log-data] [-H|--host="..."] [-U|--username="..."] [-P|--password="..."] [-N|--dbname="..."] [--prefix="..."] [--port="..."] [-F|--date-from="..."] [-T|--date-to="..."] idSite
 
 Arguments:
  idSite                Site id
@@ -30,7 +30,6 @@ Options:
  --port                Destination database port (default: "3306")
  --date-from (-F)      Start date from which data should be migrated
  --date-to (-T)        Start date from which data should be migrated
- --new-id-site (-I)    New site id, if provided site config will not be migrated, log and archive data will be copied into existing site
  --help (-h)           Display this help message.
  --quiet (-q)          Do not output any message.
  --verbose (-v|vv|vvv) Increase the verbosity of messages: 1 for normal output, 2 for more verbose output and 3 for debug
@@ -49,7 +48,7 @@ You can use command options: `--date-from` and `--date-to`.
 
 **How can I skip migrating archived data?**
 
-Just add the `--skip-archived` option.
+Just add the `--skip-archive-data` option.
 
 ## Changelog
 
