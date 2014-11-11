@@ -16,6 +16,7 @@ use Piwik\Piwik;
 use Piwik\Plugin\ConsoleCommand;
 use Piwik\Plugins\SiteMigration\Helper\DBHelper;
 use Piwik\Plugins\SiteMigration\Helper\GCHelper;
+use Piwik\Plugins\SiteMigration\Migrator\Archive\ArchiveLister;
 use Piwik\Plugins\SiteMigration\Migrator\Migrator;
 use Piwik\Plugins\SiteMigration\Migrator\MigratorSettings;
 use Piwik\Site;
@@ -105,11 +106,14 @@ class MigrateSite extends ConsoleCommand
             Log::getInstance()->setLogLevel(Log::VERBOSE);
         }
 
+        $sourceDbHelper = new DBHelper($sourceDb, Db::getDatabaseConfig());
+
         $migratorFacade = new Migrator(
-            new DBHelper($sourceDb, Db::getDatabaseConfig()),
+            $sourceDbHelper,
             new DBHelper($targetDb, $config),
             GCHelper::getInstance(),
-            $migratorSettings
+            $migratorSettings,
+            new ArchiveLister($sourceDbHelper)
         );
 
         $migratorFacade->migrate();

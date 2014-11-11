@@ -13,6 +13,7 @@ use Piwik\Log;
 use Piwik\Plugins\SiteMigration\DataProvider\BatchProvider;
 use Piwik\Plugins\SiteMigration\Helper\DBHelper;
 use Piwik\Plugins\SiteMigration\Helper\GCHelper;
+use Piwik\Plugins\SiteMigration\Migrator\Archive\ArchiveLister;
 
 class Migrator
 {
@@ -68,14 +69,20 @@ class Migrator
     /**
      * @var MigratorSettings
      */
-    private $migratorSettings;
+    private $settings;
 
-    public function __construct(DBHelper $sourceDbHelper, DBHelper $targetDbHelper, GCHelper $gcHelper, MigratorSettings $migratorSettings)
+    /**
+     * @var ArchiveLister
+     */
+    private $archiveLister;
+
+    public function __construct(DBHelper $sourceDbHelper, DBHelper $targetDbHelper, GCHelper $gcHelper, MigratorSettings $migratorSettings, ArchiveLister $archiveLister)
     {
-        $this->sourceDbHelper   = $sourceDbHelper;
-        $this->targetDbHelper   = $targetDbHelper;
-        $this->gcHelper         = $gcHelper;
-        $this->migratorSettings = $migratorSettings;
+        $this->sourceDbHelper = $sourceDbHelper;
+        $this->targetDbHelper = $targetDbHelper;
+        $this->gcHelper       = $gcHelper;
+        $this->settings       = $migratorSettings;
+        $this->archiveLister  = $archiveLister;
 
         $this->setupMigrators();
     }
@@ -90,28 +97,28 @@ class Migrator
         $this->visitActionMigrator    = new LinkVisitActionMigrator($this->targetDbHelper, $this->gcHelper, $this->siteMigrator, $this->visitMigrator, $this->actionMigrator);
         $this->conversionMigrator     = new ConversionMigrator($this->targetDbHelper, $this->gcHelper, $this->siteMigrator, $this->visitMigrator, $this->actionMigrator, $this->visitActionMigrator);
         $this->conversionItemMigrator = new ConversionItemMigrator($this->targetDbHelper, $this->gcHelper, $this->siteMigrator, $this->visitMigrator, $this->actionMigrator);
-        $this->archiveMigrator        = new ArchiveMigrator($this->sourceDbHelper, $this->targetDbHelper, $this->siteMigrator);
+        $this->archiveMigrator        = new ArchiveMigrator($this->sourceDbHelper, $this->targetDbHelper, $this->siteMigrator, $this->archiveLister);
     }
 
     public function migrate()
     {
         $this->startTransaction();
 
-        if (!$this->migratorSettings->newIdSite) {
+        if (!$this->settings->newIdSite) {
             $this->migrateSiteConfig();
         } else {
-            $this->siteMigrator->addNewId($this->migratorSettings->idSite, $this->migratorSettings->newIdSite);
+            $this->siteMigrator->addNewId($this->settings->idSite, $this->settings->newIdSite);
         }
 
         $this->loadActions();
 
-        if (!$this->migratorSettings->skipLogData) {
+        if (!$this->settings->skipLogData) {
             $this->migrateLogVisits();
             $this->migrateLogVisitActions();
             $this->migrateLogVisitConversions();
         }
 
-        if (!$this->migratorSettings->skipArchiveData) {
+        if (!$this->settings->skipArchiveData) {
             $this->migrateArchives();
         }
 
@@ -136,19 +143,19 @@ class Migrator
 
         $this->siteMigrator->migrate(
             $this->getBatchProvider(
-                'SELECT * FROM ' . $this->sourceDbHelper->prefixTable('site') . ' WHERE idsite = ' . $this->migratorSettings->idSite
+                'SELECT * FROM ' . $this->sourceDbHelper->prefixTable('site') . ' WHERE idsite = ' . $this->settings->idSite
             )
         );
 
         $this->siteGoalMigrator->migrate(
             $this->getBatchProvider(
-                'SELECT * FROM ' . $this->sourceDbHelper->prefixTable('goal') . ' WHERE idsite = ' . $this->migratorSettings->idSite
+                'SELECT * FROM ' . $this->sourceDbHelper->prefixTable('goal') . ' WHERE idsite = ' . $this->settings->idSite
             )
         );
 
         $this->siteUrlMigrator->migrate(
             $this->getBatchProvider(
-                'SELECT * FROM ' . $this->sourceDbHelper->prefixTable('site_url') . ' WHERE idsite = ' . $this->migratorSettings->idSite
+                'SELECT * FROM ' . $this->sourceDbHelper->prefixTable('site_url') . ' WHERE idsite = ' . $this->settings->idSite
             )
         );
     }
@@ -164,14 +171,14 @@ class Migrator
     {
         Log::warning('Migrating log data - visits');
 
-        $query = 'SELECT * FROM ' . $this->sourceDbHelper->prefixTable('log_visit') . ' WHERE idsite = ' . $this->migratorSettings->idSite;
+        $query = 'SELECT * FROM ' . $this->sourceDbHelper->prefixTable('log_visit') . ' WHERE idsite = ' . $this->settings->idSite;
 
-        if ($this->migratorSettings->dateFrom) {
-            $query .= ' AND `visit_last_action_time` >= \'' . $this->migratorSettings->dateFrom->format('Y-m-d') . '\'';
+        if ($this->settings->dateFrom) {
+            $query .= ' AND `visit_last_action_time` >= \'' . $this->settings->dateFrom->format('Y-m-d') . '\'';
         }
 
-        if ($this->migratorSettings->dateTo) {
-            $query .= ' AND `visit_last_action_time` < \'' . $this->migratorSettings->dateTo->format('Y-m-d') . '\'';
+        if ($this->settings->dateTo) {
+            $query .= ' AND `visit_last_action_time` < \'' . $this->settings->dateTo->format('Y-m-d') . '\'';
         }
 
         $this->visitMigrator->migrate(
@@ -207,12 +214,7 @@ class Migrator
     {
         Log::warning('Migrating archive data');
 
-        $archives = $this->archiveMigrator->getArchiveList($this->migratorSettings->dateFrom, $this->migratorSettings->dateTo);
-
-        foreach ($archives as $archive) {
-            Log::info('Migrating archive ' . $archive);
-            $this->archiveMigrator->migrateArchive($archive, $this->migratorSettings->idSite);
-        }
+        $this->archiveMigrator->migrate($this->settings->idSite, $this->settings->dateFrom, $this->settings->dateTo);
     }
 
     private function getLogVisitQueriesFor($table)
