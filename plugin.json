@@ -2,6 +2,7 @@
     "name": "SiteMigration",
     "version": "1.0.0",
     "description": "Migrate site and site data between Piwik installations",
+    "keywords": ["migration", "import", "export"],
     "homepage": "https://github.com/PiwikPRO/plugin-SiteMigration",
     "theme": false,
     "license": "GPL v3+",
