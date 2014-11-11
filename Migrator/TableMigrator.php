@@ -67,7 +67,7 @@ abstract class TableMigrator
     public function getNewId($oldId)
     {
         if (!array_key_exists($oldId, $this->idMap)) {
-            throw new MissingIDTranslationException('Id ' . $oldId . ' not found in ' . __CLASS__);
+            throw new \InvalidArgumentException('Id ' . $oldId . ' not found in ' . __CLASS__);
         }
 
         return $this->idMap[$oldId];
