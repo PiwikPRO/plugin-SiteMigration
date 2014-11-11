@@ -55,31 +55,22 @@ class MigrateSite extends ConsoleCommand
          */
         $this->addOption('date-from', 'F', InputOption::VALUE_REQUIRED, 'Start date from which data should be migrated');
         $this->addOption('date-to', 'T', InputOption::VALUE_REQUIRED, 'Start date from which data should be migrated');
-
-        /**
-         * Site id options
-         */
-        $this->addOption(
-            'new-id-site',
-            'I',
-            InputOption::VALUE_REQUIRED,
-            'New site id, if provided site config will not be migrated, log and archive data will be copied into existing site'
-        );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        /**
-         * Set memory limit to off
-         */
+        // Set memory limit to off
         @ini_set('memory_limit', -1);
         Piwik::setUserHasSuperUserAccess();
 
-        $migratorSettings = new MigratorSettings();
-        $migratorSettings->idSite = $input->getArgument('idSite');
-        $migratorSettings->site = $this->getSite($migratorSettings->idSite);
-        $migratorSettings->dateFrom = ($input->getOption('date-from')) ? new \DateTime($input->getOption('date-from')) : null;
-        $migratorSettings->dateTo = ($input->getOption('date-to')) ? new \DateTime($input->getOption('date-to')) : null;
+        $settings = new MigratorSettings();
+        $settings->idSite = $input->getArgument('idSite');
+        $settings->site = $this->getSite($settings->idSite);
+        $settings->dateFrom = $input->getOption('date-from') ? new \DateTime($input->getOption('date-from')) : null;
+        $settings->dateTo = $input->getOption('date-to') ? new \DateTime($input->getOption('date-to')) : null;
+        $settings->skipArchiveData = $input->getOption('skip-archive-data');
+        $settings->skipLogData = $input->getOption('skip-log-data');
+
         $config = Db::getDatabaseConfig();
         $startTime = microtime(true);
 
@@ -112,7 +103,7 @@ class MigrateSite extends ConsoleCommand
             $sourceDbHelper,
             new DBHelper($targetDb, $config),
             GCHelper::getInstance(),
-            $migratorSettings,
+            $settings,
             new ArchiveLister($sourceDbHelper)
         );
 

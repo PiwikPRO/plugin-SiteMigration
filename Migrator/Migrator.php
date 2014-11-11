@@ -104,11 +104,7 @@ class Migrator
     {
         $this->startTransaction();
 
-        if (!$this->settings->newIdSite) {
-            $this->migrateSiteConfig();
-        } else {
-            $this->siteMigrator->addNewId($this->settings->idSite, $this->settings->newIdSite);
-        }
+        $this->migrateSiteConfig();
 
         $this->loadActions();
 
