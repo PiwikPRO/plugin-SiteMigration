@@ -1,10 +1,10 @@
 # Piwik SiteMigration Plugin
 
+[![Build Status](https://magnum.travis-ci.com/PiwikPRO/plugin-SiteMigration.svg?token=mhqCmy1K4zUjCiYpLN8c&branch=master)](https://magnum.travis-ci.com/PiwikPRO/plugin-SiteMigration)
+
 ## Description
 
-Migrate websites and website data between two Piwik installations. 
-
-[![Build Status](https://magnum.travis-ci.com/PiwikPRO/plugin-SiteMigration.svg?token=mhqCmy1K4zUjCiYpLN8c&branch=master)](https://magnum.travis-ci.com/PiwikPRO/plugin-SiteMigration)
+Migrate websites and website data between two Piwik installations.
 
 ## Usage
 
