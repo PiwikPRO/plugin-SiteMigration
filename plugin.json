@@ -2,9 +2,14 @@
     "name": "SiteMigration",
     "version": "0.1.0",
     "description": "Migrate site and site data between Piwik installations",
+    "homepage": "https://github.com/PiwikPRO/plugin-SiteMigration",
     "theme": false,
     "license": "GPL v3+",
     "license_page": "http://www.gnu.org/licenses/gpl.html",
+    "require": {
+        "php": ">=5.3.0",
+        "piwik": ">=2.9.0-b9"
+    },
     "authors": [
         {
             "name": "Piwik PRO",
