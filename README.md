@@ -47,12 +47,6 @@ Options:
 
 You can use command options: `--date-from` and `--date-to`.
 
-**How can I migrate site data to an existing page?**
-
-Make sure that the config of the new site id is present and it is in sync with the config of the old file (custom vars, goals, etc). Check also if the site log is empty (both log and archive).
-
-If both conditions are met, run the `migrate:site` command with the `-I|--new-site-id` param. This will skip config migration and will go straightly to log data and archive migration.
-
 **How can I skip migrating archived data?**
 
 Just add the `--skip-archived` option.
