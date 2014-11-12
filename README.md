@@ -50,6 +50,10 @@ Just add the `--skip-archive-data` option.
 
 ## Changelog
 
+**v1.0.1**
+
+- Documentation update
+
 **v1.0.0**
 
 - First stable release
