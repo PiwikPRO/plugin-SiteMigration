@@ -6,8 +6,6 @@
 
 Migrate websites and website data between two Piwik installations.
 
-## Usage
-
 Migration can be started from CLI by running `./console migration:site idSite`. The command will ask for the credentials to the target database.
 
 You can run `./console migration:site --help` to get a full list of options.
