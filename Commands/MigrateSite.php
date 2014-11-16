@@ -47,7 +47,7 @@ class MigrateSite extends ConsoleCommand
         $this->addOption('db-username', 'U', InputOption::VALUE_REQUIRED, 'Destination database username');
         $this->addOption('db-password', 'P', InputOption::VALUE_REQUIRED, 'Destination database password');
         $this->addOption('db-name', 'N', InputOption::VALUE_REQUIRED, 'Destination database name');
-        $this->addOption('db-prefix', null, InputOption::VALUE_REQUIRED, 'Destination database table prefix', Common::prefixTable(''));
+        $this->addOption('db-prefix', null, InputOption::VALUE_OPTIONAL, 'Destination database table prefix');
         $this->addOption('db-port', null, InputOption::VALUE_REQUIRED, 'Destination database port', '3306');
 
         /**
