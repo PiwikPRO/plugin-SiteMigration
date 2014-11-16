@@ -4,52 +4,55 @@
 
 ## Description
 
-Migrate websites and website data between two Piwik installations.
+Migrate websites, and all the tracking data between two Piwik installations. 
 
-Migration can be started from CLI by running `./console migration:site idSite`. The command will ask for the credentials to the target database.
+This tool is useful in case you want to merge two Piwik installations, or if you want to move one or several websites to another Piwik server.
 
-You can run `./console migration:site --help` to get a full list of options.
+### Requirements
+
+To migrate data from one Piwik server to another server, you must:
+ * First make sure that both Piwik servers are using the latest Piwik version.
+ * You must be able to connect to the Mysql server of the Target Piwik Server.
+ * You must run the console command on the Piwik Server that data will be copied from.
+  
+### Migrating the data
+
+Start the migration by calling from the command line CLI the following command:
+
+    ./console migration:site idSite -v
+    
+The command will ask for the credentials to the target database.
  
-```
-Usage:
- migration:site [--skip-archive-data] [--skip-log-data] [-H|--host="..."] [-U|--username="..."] [-P|--password="..."] [-N|--dbname="..."] [--prefix="..."] [--port="..."] [-F|--date-from="..."] [-T|--date-to="..."] idSite
+It will then migrate the data from the current Piwik to the target Piwik.
 
-Arguments:
- idSite                Site id
+### Options
 
-Options:
- --skip-archive-data   Skip migration of archive data
- --skip-log-data       Skip migration of log data
- --host (-H)           Destination database host
- --username (-U)       Destination database username
- --password (-P)       Destination database password
- --dbname (-N)         Destination database name
- --prefix              Destination database table prefix (default: "piwik_")
- --port                Destination database port (default: "3306")
- --date-from (-F)      Start date from which data should be migrated
- --date-to (-T)        Start date from which data should be migrated
- --help (-h)           Display this help message.
- --quiet (-q)          Do not output any message.
- --verbose (-v|vv|vvv) Increase the verbosity of messages: 1 for normal output, 2 for more verbose output and 3 for debug
- --version (-V)        Display this application version.
- --ansi                Force ANSI output.
- --no-ansi             Disable ANSI output.
- --no-interaction (-n) Do not ask any interactive question.
- --piwik-domain        Piwik URL (protocol and domain) eg. "http://piwik.example.org"
-```
-
+Run `./console migration:site --help` to get a full list of options.
+ 
 ## FAQ
 
-**How can I migrate site data between two dates?**
+**How do I migrate site data between two dates only?**
 
 You can use command options: `--date-from` and `--date-to`.
 
-**How can I skip migrating archived data?**
+**How do I migrate tracking log data only, and skip migrating archived data?**
 
 Just add the `--skip-archive-data` option.
 
+
+**How do I migrate the archived data and skip the tracking data?**
+
+Just add the `--skip-log-data` option.
+
+**Can I run the command on the Target Piwik server (where data will be imported)?**
+
+No, you must run the command from the source Piwik server (the server which contains the data you want to migrate).
+
 ## Changelog
 
+**v1.0.2**
+
+- Documentation update & fixed bug when archive_blob tables are not found 
 **v1.0.1**
 
 - Documentation update
