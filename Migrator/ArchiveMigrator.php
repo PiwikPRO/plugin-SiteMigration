@@ -62,7 +62,12 @@ class ArchiveMigrator
             Log::info('Migrating archive ' . $archiveDate);
 
             $this->migrateArchive($archiveDate, 'archive_numeric_' . $archiveDate, $siteId);
-            $this->migrateArchive($archiveDate, 'archive_blob_' . $archiveDate, $siteId);
+
+            try {
+                $this->migrateArchive($archiveDate, 'archive_blob_' . $archiveDate, $siteId);
+            } catch(\Exception $e) {
+                // blob tables can be missing
+            }
         }
     }
 
@@ -114,9 +119,10 @@ class ArchiveMigrator
     private function getArchiveId($archiveDate, $archiveId)
     {
         if (! isset($this->archiveIdMap[$archiveDate][$archiveId])) {
+
             $sequence = new Sequence(
                 $this->targetDb->prefixTable('archive_numeric_' . $archiveDate),
-                $this->targetDb->getAdapter()
+                $this->targetDb
             );
 
             if (! $sequence->exists()) {
