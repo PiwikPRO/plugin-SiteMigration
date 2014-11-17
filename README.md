@@ -51,6 +51,14 @@ No, you must run the command from the source Piwik server (the server which cont
 
 ## Changelog
 
+**v1.0.4**
+
+- [#3](https://github.com/PiwikPRO/plugin-SiteMigration/issues/3): fixed `--db-prefix` option
+
+**v1.0.3**
+
+- Documentation update
+
 **v1.0.2**
 
 - Documentation update & fixed bug when archive_blob tables are not found 
