@@ -11,6 +11,7 @@ This tool is useful in case you want to merge two Piwik installations, or if you
 ### Requirements
 
 To migrate data from one Piwik server to another server, you must:
+
  * First make sure that both Piwik servers are using the latest Piwik version.
  * You must be able to connect to the Mysql server of the Target Piwik Server.
  * You must run the console command on the Piwik Server that data will be copied from.
@@ -53,6 +54,7 @@ No, you must run the command from the source Piwik server (the server which cont
 **v1.0.2**
 
 - Documentation update & fixed bug when archive_blob tables are not found 
+
 **v1.0.1**
 
 - Documentation update
