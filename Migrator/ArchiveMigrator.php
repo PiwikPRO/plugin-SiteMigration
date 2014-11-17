@@ -100,7 +100,7 @@ class ArchiveMigrator
             $tableType = (strpos($archiveTable, 'blob')) ? 'archive_blob' : 'archive_numeric';
             $sql       = PiwikDbHelper::getTableCreateSql($tableType);
             $sql       = str_replace($tableType, $archiveTable, $sql);
-            $sql       = str_replace($this->sourceDb->prefixTable(''), $this->targetDb->prefixTable(''), $sql);
+            $sql       = str_replace($this->sourceDb->prefixTable($tableType), $this->targetDb->prefixTable($tableType), $sql);
 
             $this->targetDb->getAdapter()->query($sql);
         }
@@ -122,7 +122,8 @@ class ArchiveMigrator
 
             $sequence = new Sequence(
                 $this->targetDb->prefixTable('archive_numeric_' . $archiveDate),
-                $this->targetDb
+                $this->targetDb->getAdapter(),
+                $this->targetDb->prefixTable('')
             );
 
             if (! $sequence->exists()) {

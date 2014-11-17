@@ -75,7 +75,7 @@ class MigrateSite extends ConsoleCommand
         $startTime = microtime(true);
 
         try {
-            $this->createDestinationDatabaseConfig($input, $output, $config);
+            $this->createTargetDatabaseConfig($input, $output, $config);
         } catch (\InvalidArgumentException $e) {
             $output->writeln('<error>' . $e->getMessage() . '</error>');
             return;
@@ -131,9 +131,8 @@ class MigrateSite extends ConsoleCommand
         );
     }
 
-    protected function createDestinationDatabaseConfig(InputInterface $input, OutputInterface $output, &$config)
+    private function createTargetDatabaseConfig(InputInterface $input, OutputInterface $output, &$config)
     {
-
         $notNullValidator = function ($answer) {
             if (strlen(trim($answer)) == 0) {
                 throw new \InvalidArgumentException('This value should not be empty');
