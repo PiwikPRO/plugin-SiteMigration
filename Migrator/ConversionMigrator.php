@@ -63,6 +63,8 @@ class ConversionMigrator extends TableMigrator
             $row['idaction_url'] = $this->actionMigrator->getNewId(
                 $row['idaction_url']
             );
+        } else {
+            $row['idaction_url'] = 0;
         }
     }
 
