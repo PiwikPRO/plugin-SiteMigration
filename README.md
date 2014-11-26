@@ -51,6 +51,10 @@ No, you must run the command from the source Piwik server (the server which cont
 
 ## Changelog
 
+**v1.0.5**
+
+- [#5](https://github.com/PiwikPRO/plugin-SiteMigration/issues/5): fixed `Integrity constraint violation: 1048 Column 'idaction_url' cannot be null`
+
 **v1.0.4**
 
 - [#3](https://github.com/PiwikPRO/plugin-SiteMigration/issues/3): fixed `--db-prefix` option
