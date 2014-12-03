@@ -1,6 +1,6 @@
 # Piwik SiteMigration Plugin
 
-[![Build Status](https://magnum.travis-ci.com/PiwikPRO/plugin-SiteMigration.svg?token=mhqCmy1K4zUjCiYpLN8c&branch=master)](https://magnum.travis-ci.com/PiwikPRO/plugin-SiteMigration)
+[![Build Status](https://travis-ci.org/PiwikPRO/plugin-SiteMigration.svg?branch=master)](https://travis-ci.org/PiwikPRO/plugin-SiteMigration)
 
 ## Description
 
