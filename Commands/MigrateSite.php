@@ -186,7 +186,7 @@ class MigrateSite extends ConsoleCommand
         $config['tables_prefix'] = $input->getOption('db-prefix');
     }
 
-    public function ensureOptionsIsProvided($optionName, InputInterface $input, OutputInterface $output, $question, callable $validator, $attempts = false, $default = null, $hidden = false)
+    public function ensureOptionsIsProvided($optionName, InputInterface $input, OutputInterface $output, $question, $validator, $attempts = false, $default = null, $hidden = false)
     {
         if (!$input->getOption($optionName)) {
             return $this->askAndValidate($output, $question, $validator, $attempts, $default, $hidden);
@@ -198,7 +198,7 @@ class MigrateSite extends ConsoleCommand
     protected function askAndValidate(
         OutputInterface $output,
         $question,
-        callable $validator,
+        $validator,
         $attempts = false,
         $default = null,
         $hidden = false
