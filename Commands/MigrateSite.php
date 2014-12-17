@@ -74,12 +74,7 @@ class MigrateSite extends ConsoleCommand
         $config = Db::getDatabaseConfig();
         $startTime = microtime(true);
 
-        try {
-            $this->createTargetDatabaseConfig($input, $output, $config);
-        } catch (\InvalidArgumentException $e) {
-            $output->writeln('<error>' . $e->getMessage() . '</error>');
-            return;
-        }
+        $this->createTargetDatabaseConfig($input, $output, $config);
 
         $tmpConfig = $config;
         $sourceDb = Db::get();
@@ -87,14 +82,6 @@ class MigrateSite extends ConsoleCommand
             $targetDb = @Db\Adapter::factory($config['adapter'], $tmpConfig);
         } catch (\Exception $e) {
             throw new \RuntimeException('Unable to connect to the target database: ' . $e->getMessage(), 0, $e);
-        }
-
-        if ($output->getVerbosity() == OutputInterface::VERBOSITY_VERBOSE) {
-            Log::getInstance()->setLogLevel(Log::INFO);
-        }
-
-        if ($output->getVerbosity() >= OutputInterface::VERBOSITY_VERY_VERBOSE) {
-            Log::getInstance()->setLogLevel(Log::VERBOSE);
         }
 
         $sourceDbHelper = new DBHelper($sourceDb, Db::getDatabaseConfig());
@@ -111,11 +98,8 @@ class MigrateSite extends ConsoleCommand
 
         $endTime = microtime(true);
 
-        $output->writeln(sprintf(PHP_EOL . '<comment>Time taken: %01.2f sec</comment>', $endTime - $startTime));
-        $output->writeln(sprintf(
-            '<comment>Peak memory usage: %01.2f MB</comment>',
-            memory_get_peak_usage(true) / 1048576
-        ));
+        Log::debug(sprintf('Time taken: %01.2f sec', $endTime - $startTime));
+        Log::debug(sprintf('Peak memory usage: %01.2f MB', memory_get_peak_usage(true) / 1048576));
     }
 
 
