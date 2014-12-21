@@ -51,7 +51,11 @@ No, you must run the command from the source Piwik server (the server which cont
 
 ## Changelog
 
-**v1.0.5**
+**v1.0.7**
+
+- Updated the plugin for compatibility with Piwik 2.10.
+
+**v1.0.6**
 
 - [#6](https://github.com/PiwikPRO/plugin-SiteMigration/issues/6): fixed a PHP 5.3 incompatibility
 

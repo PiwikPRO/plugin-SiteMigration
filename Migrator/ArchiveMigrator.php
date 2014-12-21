@@ -59,7 +59,7 @@ class ArchiveMigrator
         $archives = $this->archiveLister->getArchiveList($from, $to);
 
         foreach ($archives as $archiveDate) {
-            Log::info('Migrating archive ' . $archiveDate);
+            Log::debug('Migrating archive ' . $archiveDate);
 
             $this->migrateArchive($archiveDate, 'archive_numeric_' . $archiveDate, $siteId);
 

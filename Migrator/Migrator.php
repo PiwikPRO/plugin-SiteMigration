@@ -123,19 +123,19 @@ class Migrator
 
     private function startTransaction()
     {
-        Log::warning('Start transaction');
+        Log::info('Start transaction');
         $this->targetDbHelper->startTransaction();
     }
 
     private function commitTransaction()
     {
-        Log::warning('Commit transaction');
+        Log::info('Commit transaction');
         $this->targetDbHelper->commitTransaction();
     }
 
     private function migrateSiteConfig()
     {
-        Log::warning('Migrating site config');
+        Log::info('Migrating site config');
 
         $this->siteMigrator->migrate(
             $this->getBatchProvider(
@@ -158,14 +158,14 @@ class Migrator
 
     private function loadActions()
     {
-        Log::warning('Loading existing actions');
+        Log::info('Loading existing actions');
 
         $this->actionMigrator->loadExistingActions();
     }
 
     private function migrateLogVisits()
     {
-        Log::warning('Migrating log data - visits');
+        Log::info('Migrating log data - visits');
 
         $query = 'SELECT * FROM ' . $this->sourceDbHelper->prefixTable('log_visit') . ' WHERE idsite = ' . $this->settings->idSite;
 
@@ -184,7 +184,7 @@ class Migrator
 
     private function migrateLogVisitActions()
     {
-        Log::warning('Migrating log data - link visit action');
+        Log::info('Migrating log data - link visit action');
 
         $queries = $this->getLogVisitQueriesFor('log_link_visit_action');
 
@@ -195,7 +195,7 @@ class Migrator
 
     private function migrateLogVisitConversions()
     {
-        Log::warning('Migrating log data - conversions and conversion items');
+        Log::info('Migrating log data - conversions and conversion items');
 
         $queries     = $this->getLogVisitQueriesFor('log_conversion');
         $itemQueries = $this->getLogVisitQueriesFor('log_conversion_item');
@@ -208,7 +208,7 @@ class Migrator
 
     private function migrateArchives()
     {
-        Log::warning('Migrating archive data');
+        Log::info('Migrating archive data');
 
         $this->archiveMigrator->migrate($this->settings->idSite, $this->settings->dateFrom, $this->settings->dateTo);
     }
