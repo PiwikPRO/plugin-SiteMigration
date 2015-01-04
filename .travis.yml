@@ -15,8 +15,8 @@ env:
   global:
     - PLUGIN_NAME=SiteMigration
     - PIWIK_ROOT_DIR=$TRAVIS_BUILD_DIR/piwik
-    - secure: "MecP/JQjskly7B2qG9xSUJTAIWNCGAl8/LOcCY9MFSDwMX1VmSNxK0u4h8OF06IeE+g2MwO1LE5kM5X8s08imSIRiL/LHqmI/S3ZwwrBh6CSeWO3KgoNsmHV85HyTJxu11Q9WVv5QPSx0npFcIrNmHHjMtUqqzhd9pTYNaPwXd4="
-    - secure: "PwcQl1kKdg7FrBoFmJabWA/tjmlpaW9E5ykwttnHFywEJlnx4QXfc+VM3fPTOghIHgFLZgHQfuZkQjR/it2W/aS9WGIR2guE9/0WowohzLHYNm/HhBvyGTFbE2ZlxXV2qKujJuui3k1wSYkI1VVYsGNgH/sYeq4D+v0J9yC32dI="
+    - secure: "MYN09GOHLHwhPl8+MXK4iDstpv4tVcE2mnAzoxOPCgwtkVGtoSKRwhjwsIWv74FxbwI82s4iSwy9/u8HDUYtPFtAqSiOTC/O26uIoUxn/I3Zgiw5D2IlryL8NJ1xzIjh2nsoSMzQ2ipoGq/DjGsO2nq/S9m7JosaPHoMfujYkWg="
+    - secure: "ebPfmzB9Angmaxni3e6InFEkwQP0oHS0Js8gidKJZeaITi50UCJPtS3inqsjB4kkoQrxDlk6HkzPiO1FCALWxAan2eN/+AS0Y/fLHNWi6lakkX8H/CjvBHnAasQugv91X3Unw0YtBS6LVa+X68bnUU+s2mL3klLzutuFX1uz+iM="
   matrix:
     - TEST_SUITE=PluginTests MYSQL_ADAPTER=PDO_MYSQL
     - TEST_SUITE=PluginTests MYSQL_ADAPTER=PDO_MYSQL TEST_AGAINST_CORE=latest_stable
@@ -41,7 +41,6 @@ install:
   - cp -R !($PLUGIN_NAME) $PLUGIN_NAME
   - cp -R .git/ $PLUGIN_NAME/
   - cp .travis.yml $PLUGIN_NAME
-
   # checkout piwik in the current directory
   - git clone https://github.com/piwik/piwik.git piwik
   - cd piwik
@@ -59,7 +58,6 @@ install:
   - git checkout "$TEST_AGAINST_PIWIK_BRANCH"
   - git submodule init
   - git submodule update || true
-
   # move plugin contents to folder in the plugins subdirectory
   - rm -rf plugins/$PLUGIN_NAME
   - mv ../$PLUGIN_NAME plugins
@@ -70,12 +68,13 @@ install:
     fi
 
   # make sure travis test scripts are always latest (so in older releases/branches, the latest scripts will still be used)
-  - git checkout master -- ./tests/travis ./plugins/TestRunner
-
+  - git checkout master -- ./tests/travis ./plugins/TestRunner || true
   # clone dependent repos
   - ./tests/travis/checkout_dependent_plugins.sh
 
 before_script:
+  - ./tests/travis/install_mysql_5.6.sh
+
   - if ([ -z "$TEST_SUITE" ] || [ -n "$PLUGIN_NAME" ]);
     then composer require satooshi/php-coveralls dev-master;
     else
@@ -93,6 +92,7 @@ before_script:
 
   # configure mysql
   - mysql -e "SET GLOBAL sql_mode = 'NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES'" # Travis default
+  - mysql -e "SET GLOBAL wait_timeout = 3600" # try to avoid mysql has gone away errors
 
   - mysql -e "SELECT @@sql_mode;"
   - mysql -e "SHOW GLOBAL VARIABLES;"
