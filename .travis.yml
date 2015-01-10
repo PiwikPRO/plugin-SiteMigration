@@ -19,15 +19,15 @@ env:
     - secure: "ebPfmzB9Angmaxni3e6InFEkwQP0oHS0Js8gidKJZeaITi50UCJPtS3inqsjB4kkoQrxDlk6HkzPiO1FCALWxAan2eN/+AS0Y/fLHNWi6lakkX8H/CjvBHnAasQugv91X3Unw0YtBS6LVa+X68bnUU+s2mL3klLzutuFX1uz+iM="
   matrix:
     - TEST_SUITE=PluginTests MYSQL_ADAPTER=PDO_MYSQL
-    - TEST_SUITE=PluginTests MYSQL_ADAPTER=PDO_MYSQL TEST_AGAINST_CORE=latest_stable
+    - TEST_SUITE=PluginTests MYSQL_ADAPTER=PDO_MYSQL TEST_AGAINST_CORE=minimum_required_piwik
 
 matrix:
   exclude:
     # execute latest stable tests only w/ PHP 5.5
     - php: 5.3.3
-      env: TEST_SUITE=PluginTests MYSQL_ADAPTER=PDO_MYSQL TEST_AGAINST_CORE=latest_stable
+      env: TEST_SUITE=PluginTests MYSQL_ADAPTER=PDO_MYSQL TEST_AGAINST_CORE=minimum_required_piwik
     - php: 5.4
-      env: TEST_SUITE=PluginTests MYSQL_ADAPTER=PDO_MYSQL TEST_AGAINST_CORE=latest_stable
+      env: TEST_SUITE=PluginTests MYSQL_ADAPTER=PDO_MYSQL TEST_AGAINST_CORE=minimum_required_piwik
 
 script: $PIWIK_ROOT_DIR/tests/travis/travis.sh
 
