@@ -16,7 +16,7 @@ env:
     - PLUGIN_NAME=SiteMigration
     - PIWIK_ROOT_DIR=$TRAVIS_BUILD_DIR/piwik
     - secure: "MYN09GOHLHwhPl8+MXK4iDstpv4tVcE2mnAzoxOPCgwtkVGtoSKRwhjwsIWv74FxbwI82s4iSwy9/u8HDUYtPFtAqSiOTC/O26uIoUxn/I3Zgiw5D2IlryL8NJ1xzIjh2nsoSMzQ2ipoGq/DjGsO2nq/S9m7JosaPHoMfujYkWg="
-    - secure: "ebPfmzB9Angmaxni3e6InFEkwQP0oHS0Js8gidKJZeaITi50UCJPtS3inqsjB4kkoQrxDlk6HkzPiO1FCALWxAan2eN/+AS0Y/fLHNWi6lakkX8H/CjvBHnAasQugv91X3Unw0YtBS6LVa+X68bnUU+s2mL3klLzutuFX1uz+iM="
+    - secure: "dLzccYWjSBxe7SNph/mPIEDljLqCJgdnAEv7vpqLObLYGdYlnJbYbS/xmCQCwhjMeGDXduhwZfWqhEGwhZnoSDy6codXBevwI7MZXMQFWmkMbkdj5ukBMNP3YmbLAV3y5VlY0Y7L8Qu5JpWsI/IcALSLIHDvBLgztufx2DepNs4="
   matrix:
     - TEST_SUITE=PluginTests MYSQL_ADAPTER=PDO_MYSQL
     - TEST_SUITE=PluginTests MYSQL_ADAPTER=PDO_MYSQL TEST_AGAINST_CORE=minimum_required_piwik
