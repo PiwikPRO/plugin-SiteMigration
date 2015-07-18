@@ -15,19 +15,22 @@ env:
   global:
     - PLUGIN_NAME=SiteMigration
     - PIWIK_ROOT_DIR=$TRAVIS_BUILD_DIR/piwik
+    - PIWIK_LATEST_STABLE_TEST_TARGET=2.14.1
     - secure: "MYN09GOHLHwhPl8+MXK4iDstpv4tVcE2mnAzoxOPCgwtkVGtoSKRwhjwsIWv74FxbwI82s4iSwy9/u8HDUYtPFtAqSiOTC/O26uIoUxn/I3Zgiw5D2IlryL8NJ1xzIjh2nsoSMzQ2ipoGq/DjGsO2nq/S9m7JosaPHoMfujYkWg="
     - secure: "dLzccYWjSBxe7SNph/mPIEDljLqCJgdnAEv7vpqLObLYGdYlnJbYbS/xmCQCwhjMeGDXduhwZfWqhEGwhZnoSDy6codXBevwI7MZXMQFWmkMbkdj5ukBMNP3YmbLAV3y5VlY0Y7L8Qu5JpWsI/IcALSLIHDvBLgztufx2DepNs4="
   matrix:
-    - TEST_SUITE=PluginTests MYSQL_ADAPTER=PDO_MYSQL
+    - TEST_SUITE=PluginTests MYSQL_ADAPTER=PDO_MYSQL TEST_AGAINST_PIWIK_BRANCH=$PIWIK_LATEST_STABLE_TEST_TARGET
+    - TEST_SUITE=UITests MYSQL_ADAPTER=PDO_MYSQL TEST_AGAINST_PIWIK_BRANCH=$PIWIK_LATEST_STABLE_TEST_TARGET
     - TEST_SUITE=PluginTests MYSQL_ADAPTER=PDO_MYSQL TEST_AGAINST_CORE=minimum_required_piwik
 
 matrix:
   exclude:
-    # execute latest stable tests only w/ PHP 5.5
+    # execute latest stable tests only w/ PHP 5.6
     - php: 5.3.3
       env: TEST_SUITE=PluginTests MYSQL_ADAPTER=PDO_MYSQL TEST_AGAINST_CORE=minimum_required_piwik
-    - php: 5.4
-      env: TEST_SUITE=PluginTests MYSQL_ADAPTER=PDO_MYSQL TEST_AGAINST_CORE=minimum_required_piwik
+    # execute UI tests only w/ PHP 5.6
+    - php: 5.3.3
+      env: TEST_SUITE=UITests MYSQL_ADAPTER=PDO_MYSQL TEST_AGAINST_PIWIK_BRANCH=$PIWIK_LATEST_STABLE_TEST_TARGET
 
 sudo: required
 
