@@ -61,45 +61,45 @@ class MigrateSite extends ConsoleCommand
     {
         // Set memory limit to off
         @ini_set('memory_limit', -1);
-        Piwik::setUserHasSuperUserAccess();
+        Piwik::doAsSuperUser(function() use ($input, $output){
+            $settings = new MigratorSettings();
+            $settings->idSite = $input->getArgument('idSite');
+            $settings->site = $this->getSite($settings->idSite);
+            $settings->dateFrom = $input->getOption('date-from') ? new \DateTime($input->getOption('date-from')) : null;
+            $settings->dateTo = $input->getOption('date-to') ? new \DateTime($input->getOption('date-to')) : null;
+            $settings->skipArchiveData = $input->getOption('skip-archive-data');
+            $settings->skipLogData = $input->getOption('skip-log-data');
 
-        $settings = new MigratorSettings();
-        $settings->idSite = $input->getArgument('idSite');
-        $settings->site = $this->getSite($settings->idSite);
-        $settings->dateFrom = $input->getOption('date-from') ? new \DateTime($input->getOption('date-from')) : null;
-        $settings->dateTo = $input->getOption('date-to') ? new \DateTime($input->getOption('date-to')) : null;
-        $settings->skipArchiveData = $input->getOption('skip-archive-data');
-        $settings->skipLogData = $input->getOption('skip-log-data');
+            $config = Db::getDatabaseConfig();
+            $startTime = microtime(true);
 
-        $config = Db::getDatabaseConfig();
-        $startTime = microtime(true);
+            $this->createTargetDatabaseConfig($input, $output, $config);
 
-        $this->createTargetDatabaseConfig($input, $output, $config);
+            $tmpConfig = $config;
+            $sourceDb = Db::get();
+            try {
+                $targetDb = @Db\Adapter::factory($config['adapter'], $tmpConfig);
+            } catch (\Exception $e) {
+                throw new \RuntimeException('Unable to connect to the target database: ' . $e->getMessage(), 0, $e);
+            }
 
-        $tmpConfig = $config;
-        $sourceDb = Db::get();
-        try {
-            $targetDb = @Db\Adapter::factory($config['adapter'], $tmpConfig);
-        } catch (\Exception $e) {
-            throw new \RuntimeException('Unable to connect to the target database: ' . $e->getMessage(), 0, $e);
-        }
+            $sourceDbHelper = new DBHelper($sourceDb, Db::getDatabaseConfig());
 
-        $sourceDbHelper = new DBHelper($sourceDb, Db::getDatabaseConfig());
+            $migratorFacade = new Migrator(
+                $sourceDbHelper,
+                new DBHelper($targetDb, $config),
+                GCHelper::getInstance(),
+                $settings,
+                new ArchiveLister($sourceDbHelper)
+            );
 
-        $migratorFacade = new Migrator(
-            $sourceDbHelper,
-            new DBHelper($targetDb, $config),
-            GCHelper::getInstance(),
-            $settings,
-            new ArchiveLister($sourceDbHelper)
-        );
+            $migratorFacade->migrate();
 
-        $migratorFacade->migrate();
+            $endTime = microtime(true);
 
-        $endTime = microtime(true);
-
-        Log::debug(sprintf('Time taken: %01.2f sec', $endTime - $startTime));
-        Log::debug(sprintf('Peak memory usage: %01.2f MB', memory_get_peak_usage(true) / 1048576));
+            Log::debug(sprintf('Time taken: %01.2f sec', $endTime - $startTime));
+            Log::debug(sprintf('Peak memory usage: %01.2f MB', memory_get_peak_usage(true) / 1048576));
+        });
     }
 
 
