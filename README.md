@@ -20,7 +20,7 @@ To migrate data from one Piwik server to another server, you must:
 
 Start the migration by calling from the command line CLI the following command:
 
-    ./console migration:site idSite -v
+    ./console migration:site idSite --db-prefix piwik_
     
 The command will ask for the credentials to the target database.
  
