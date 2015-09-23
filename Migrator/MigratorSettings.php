@@ -15,22 +15,6 @@ class MigratorSettings
 
     public $skipLogData;
 
-    public $idSite;
-
-    public $site;
-
-    public $dbHost;
-
-    public $dbUsername;
-
-    public $dbPassword;
-
-    public $dbName;
-
-    public $dbPrefix;
-
-    public $dbPort;
-
     /**
      * @var \DateTime|null
      */
@@ -40,6 +24,4 @@ class MigratorSettings
      * @var \DateTime|null
      */
     public $dateTo;
-
-    public $newIdSite;
 }

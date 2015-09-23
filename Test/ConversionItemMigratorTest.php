@@ -14,17 +14,12 @@ use Piwik\Plugins\SiteMigration\Migrator\ConversionItemMigrator;
 /**
  * @group SiteMigration
  */
-class ConversionItemMigratorTest extends \PHPUnit_Framework_TestCase
+class ConversionItemMigratorTest extends BaseMigratorTest
 {
     /**
      * @var ConversionItemMigrator
      */
     protected $conversionItemMigrator;
-
-    /**
-     * @var \PHPUnit_Framework_MockObject_MockObject
-     */
-    protected $toDbHelper;
 
     /**
      * @var \PHPUnit_Framework_MockObject_MockObject
@@ -61,14 +56,7 @@ class ConversionItemMigratorTest extends \PHPUnit_Framework_TestCase
 
     protected function reset()
     {
-        $this->toDbHelper = $this->getMock(
-            'Piwik\Plugins\SiteMigration\Helper\DBHelper',
-            array('executeInsert', 'lastInsertId', 'getAdapter', 'prefixTable', 'acquireLock', 'releaseLock'),
-            array(),
-            '',
-            false
-        );
-
+        parent::reset();
 
         $this->actionMigrator = $this->getMock(
             'Piwik\Plugins\SiteMigration\Migrator\ActionMigrator',
@@ -102,9 +90,14 @@ class ConversionItemMigratorTest extends \PHPUnit_Framework_TestCase
             false
         );
 
-        $this->gcHelper = $this->getMock('Piwik\Plugins\SiteMigration\Helper\GCHelper', array(), array(), '', false);
-
-        $this->conversionItemMigrator = new ConversionItemMigrator($this->toDbHelper, $this->gcHelper, $this->siteMigrator, $this->visitMigrator, $this->actionMigrator);
+        $this->conversionItemMigrator = new ConversionItemMigrator(
+            $this->sourceDefinition,
+            $this->targetDefinition,
+            $this->gcHelper,
+            $this->siteMigrator,
+            $this->visitMigrator,
+            $this->actionMigrator
+        );
     }
 
     public function test_migrateConversionItems()

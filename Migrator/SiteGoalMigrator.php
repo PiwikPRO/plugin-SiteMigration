@@ -9,8 +9,8 @@
 
 namespace Piwik\Plugins\SiteMigration\Migrator;
 
-use Piwik\Plugins\SiteMigration\Helper\DBHelper;
 use Piwik\Plugins\SiteMigration\Helper\GCHelper;
+use Piwik\Plugins\SiteMigration\Model\SiteDefinition;
 
 class SiteGoalMigrator extends TableMigrator
 {
@@ -19,11 +19,16 @@ class SiteGoalMigrator extends TableMigrator
      */
     protected $siteMigrator;
 
-    public function __construct(DBHelper $targetDb, GCHelper $gcHelper, TableMigrator $siteMigrator)
+    public function __construct(
+        SiteDefinition $sourceDef,
+        SiteDefinition $targetDef,
+        GCHelper $gcHelper,
+        TableMigrator $siteMigrator
+    )
     {
         $this->siteMigrator = $siteMigrator;
 
-        parent::__construct($targetDb, $gcHelper);
+        parent::__construct($sourceDef, $targetDef, $gcHelper);
     }
 
     protected function translateRow(&$row)

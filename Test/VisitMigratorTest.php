@@ -14,22 +14,12 @@ use Piwik\Plugins\SiteMigration\Migrator\VisitMigrator;
 /**
  * @group SiteMigration
  */
-class VisitMigratorTest extends \PHPUnit_Framework_TestCase
+class VisitMigratorTest extends BaseMigratorTest
 {
     /**
      * @var VisitMigrator
      */
     protected $visitMigrator;
-
-    /**
-     * @var \PHPUnit_Framework_MockObject_MockObject
-     */
-    protected $toDbHelper;
-
-    /**
-     * @var \PHPUnit_Framework_MockObject_MockObject
-     */
-    protected $adapter;
 
     /**
      * @var \PHPUnit_Framework_MockObject_MockObject
@@ -46,8 +36,6 @@ class VisitMigratorTest extends \PHPUnit_Framework_TestCase
      */
     protected $siteMigrator;
 
-    protected $gcHelper;
-
     public function setUp()
     {
         parent::setUp();
@@ -57,21 +45,7 @@ class VisitMigratorTest extends \PHPUnit_Framework_TestCase
 
     protected function reset()
     {
-        $this->adapter = $this->getMock(
-            'Zend_Db_Adapter_Pdo_Mysql',
-            array('fetchRow', 'fetchAll', 'fetchCol', 'prepare', 'query'),
-            array(),
-            '',
-            false
-        );
-
-        $this->toDbHelper = $this->getMock(
-            'Piwik\Plugins\SiteMigration\Helper\DBHelper',
-            array('executeInsert', 'lastInsertId', 'getAdapter', 'prefixTable', 'acquireLock', 'releaseLock'),
-            array(),
-            '',
-            false
-        );
+       parent::reset();
 
         $this->actionMigrator = $this->getMock(
             'Piwik\Plugins\SiteMigration\Migrator\ActionMigrator',
@@ -101,7 +75,13 @@ class VisitMigratorTest extends \PHPUnit_Framework_TestCase
 
         $this->gcHelper = $this->getMock('Piwik\Plugins\SiteMigration\Helper\GCHelper', array(), array(), '', false);
 
-        $this->visitMigrator = new VisitMigrator($this->toDbHelper, $this->gcHelper, $this->siteMigrator, $this->actionMigrator);
+        $this->visitMigrator = new VisitMigrator(
+            $this->sourceDefinition,
+            $this->targetDefinition,
+            $this->gcHelper,
+            $this->siteMigrator,
+            $this->actionMigrator
+        );
     }
 
     public function test_migrateVisits()

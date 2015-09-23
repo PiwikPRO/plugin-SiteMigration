@@ -19,8 +19,8 @@ use Piwik\Plugins\SiteMigration\Helper\GCHelper;
 use Piwik\Plugins\SiteMigration\Migrator\Archive\ArchiveLister;
 use Piwik\Plugins\SiteMigration\Migrator\Migrator;
 use Piwik\Plugins\SiteMigration\Migrator\MigratorSettings;
+use Piwik\Plugins\SiteMigration\Model\SiteDefinition;
 use Piwik\Site;
-use Symfony\Component\Console\Helper\DialogHelper;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -71,9 +71,10 @@ class MigrateSite extends ConsoleCommand
         // Set memory limit to off
         @ini_set('memory_limit', -1);
         Piwik::doAsSuperUser(function() use ($input, $output){
+            //Validate site
+            $this->getSite($input->getArgument('idSite'));
+
             $settings = new MigratorSettings();
-            $settings->idSite = $input->getArgument('idSite');
-            $settings->site = $this->getSite($settings->idSite);
             $settings->dateFrom = $input->getOption('date-from') ? new \DateTime($input->getOption('date-from')) : null;
             $settings->dateTo = $input->getOption('date-to') ? new \DateTime($input->getOption('date-to')) : null;
             $settings->skipArchiveData = $input->getOption('skip-archive-data');
@@ -93,10 +94,14 @@ class MigrateSite extends ConsoleCommand
             }
 
             $sourceDbHelper = new DBHelper($sourceDb, $localConfig);
+            $sourceDefinition = new SiteDefinition($input->getArgument('idSite'), $sourceDbHelper);
+
+            $targetDbHelper = new DBHelper($targetDb, $targetConfig);
+            $targetDefinition = new SiteDefinition(null, $targetDbHelper);
 
             $migratorFacade = new Migrator(
-                $sourceDbHelper,
-                new DBHelper($targetDb, $targetConfig),
+                $sourceDefinition,
+                $targetDefinition,
                 GCHelper::getInstance(),
                 $settings,
                 new ArchiveLister($sourceDbHelper)
