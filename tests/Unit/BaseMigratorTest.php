@@ -6,7 +6,7 @@
  * Time: 12:29
  */
 
-namespace Piwik\Plugins\SiteMigration\Test;
+namespace Piwik\Plugins\SiteMigration\tests\Unit;
 
 use Piwik\Plugins\SiteMigration\Model\SiteDefinition;
 
