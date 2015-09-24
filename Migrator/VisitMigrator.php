@@ -25,8 +25,7 @@ class VisitMigrator extends TableMigrator
     protected $siteMigrator;
 
     public function __construct(
-        SiteDefinition $sourceDef,
-        SiteDefinition $targetDef,
+        MigratorSettings $settings,
         GCHelper $gcHelper,
         TableMigrator $siteMigrator,
         ActionMigrator $actionMigrator
@@ -34,7 +33,7 @@ class VisitMigrator extends TableMigrator
     {
         $this->actionMigrator = $actionMigrator;
         $this->siteMigrator   = $siteMigrator;
-        parent::__construct($sourceDef, $targetDef, $gcHelper);
+        parent::__construct($settings, $gcHelper);
     }
 
     protected function getTableName()

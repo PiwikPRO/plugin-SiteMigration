@@ -9,11 +9,29 @@
 
 namespace Piwik\Plugins\SiteMigration\Migrator;
 
+use Piwik\Plugins\SiteMigration\Model\SiteDefinition;
+
 class MigratorSettings
 {
+    /**
+     * @var bool
+     */
     public $skipArchiveData;
 
+    /**
+     * @var bool
+     */
     public $skipLogData;
+
+    /**
+     * @var SiteDefinition
+     */
+    public $sourceDef;
+
+    /**
+     * @var SiteDefinition
+     */
+    public $targetDef;
 
     /**
      * @var \DateTime|null

@@ -74,12 +74,6 @@ class MigrateSite extends ConsoleCommand
             //Validate site
             $this->getSite($input->getArgument('idSite'));
 
-            $settings = new MigratorSettings();
-            $settings->dateFrom = $input->getOption('date-from') ? new \DateTime($input->getOption('date-from')) : null;
-            $settings->dateTo = $input->getOption('date-to') ? new \DateTime($input->getOption('date-to')) : null;
-            $settings->skipArchiveData = $input->getOption('skip-archive-data');
-            $settings->skipLogData = $input->getOption('skip-log-data');
-
             $localConfig = Db::getDatabaseConfig();
             $startTime = microtime(true);
 
@@ -99,9 +93,15 @@ class MigrateSite extends ConsoleCommand
             $targetDbHelper = new DBHelper($targetDb, $targetConfig);
             $targetDefinition = new SiteDefinition(null, $targetDbHelper);
 
+            $settings = new MigratorSettings();
+            $settings->dateFrom = $input->getOption('date-from') ? new \DateTime($input->getOption('date-from')) : null;
+            $settings->dateTo = $input->getOption('date-to') ? new \DateTime($input->getOption('date-to')) : null;
+            $settings->skipArchiveData = $input->getOption('skip-archive-data');
+            $settings->skipLogData = $input->getOption('skip-log-data');
+            $settings->sourceDef = $sourceDefinition;
+            $settings->targetDef = $targetDefinition;
+
             $migratorFacade = new Migrator(
-                $sourceDefinition,
-                $targetDefinition,
                 GCHelper::getInstance(),
                 $settings,
                 new ArchiveLister($sourceDbHelper)

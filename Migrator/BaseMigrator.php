@@ -13,9 +13,19 @@ use Piwik\Plugins\SiteMigration\Model\SiteDefinition;
 
 abstract class BaseMigrator
 {
+    /**
+     * @var MigratorSettings
+     */
+    protected $settings;
 
+    /**
+     * @var \Piwik\Plugins\SiteMigration\Model\SiteDefinition
+     */
     protected $sourceDef;
 
+    /**
+     * @var \Piwik\Plugins\SiteMigration\Model\SiteDefinition
+     */
     protected $targetDef;
 
     /**
@@ -29,13 +39,14 @@ abstract class BaseMigrator
     protected $idMap = array();
 
     public function __construct(
-        SiteDefinition $sourceDef,
-        SiteDefinition $targetDef,
+        MigratorSettings $settings,
         GCHelper $gcHelper
     )
     {
-        $this->sourceDef = $sourceDef;
-        $this->targetDef = $targetDef;
+        $this->settings = $settings;
+
+        $this->sourceDef = $settings->sourceDef;
+        $this->targetDef = $settings->targetDef;
 
         $this->gcHelper = $gcHelper;
     }

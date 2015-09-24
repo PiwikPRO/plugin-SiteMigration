@@ -19,11 +19,11 @@ class SiteUrlMigrator extends TableMigrator
      */
     protected $siteMigrator;
 
-    public function __construct(SiteDefinition $sourceDef, SiteDefinition $targetDef, GCHelper $gcHelper, TableMigrator $siteMigrator)
+    public function __construct(MigratorSettings $settings, GCHelper $gcHelper, TableMigrator $siteMigrator)
     {
         $this->siteMigrator = $siteMigrator;
 
-        parent::__construct($sourceDef, $targetDef, $gcHelper);
+        parent::__construct($settings, $gcHelper);
     }
 
     protected function translateRow(&$row)

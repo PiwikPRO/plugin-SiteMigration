@@ -15,7 +15,6 @@ use Piwik\DbHelper as PiwikDbHelper;
 use Piwik\Log;
 use Piwik\Plugins\SiteMigration\Helper\GCHelper;
 use Piwik\Plugins\SiteMigration\Migrator\Archive\ArchiveLister;
-use Piwik\Plugins\SiteMigration\Model\SiteDefinition;
 use Piwik\Sequence;
 
 class ArchiveMigrator extends BaseMigrator
@@ -31,8 +30,7 @@ class ArchiveMigrator extends BaseMigrator
     private $archiveLister;
 
     public function __construct(
-        SiteDefinition $sourceDef,
-        SiteDefinition $targetDef,
+        MigratorSettings $settings,
         GCHelper $gcHelper,
         SiteMigrator $siteMigrator,
         ArchiveLister $archiveLister
@@ -41,7 +39,7 @@ class ArchiveMigrator extends BaseMigrator
         $this->siteMigrator = $siteMigrator;
         $this->archiveLister = $archiveLister;
 
-        parent::__construct($sourceDef, $targetDef, $gcHelper);
+        parent::__construct($settings, $gcHelper);
     }
 
     public function migrate($siteId, \DateTime $from = null, \DateTime $to = null)

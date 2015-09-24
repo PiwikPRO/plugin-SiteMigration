@@ -35,8 +35,7 @@ class ConversionMigrator extends TableMigrator
     protected $actionMigrator;
 
     public function __construct(
-        SiteDefinition $sourceDef,
-        SiteDefinition $targetDef,
+        MigratorSettings $settings,
         GCHelper $gcHelper,
         TableMigrator $siteMigrator,
         TableMigrator $visitMigrator,
@@ -48,7 +47,7 @@ class ConversionMigrator extends TableMigrator
         $this->actionMigrator          = $actionMigrator;
         $this->linkVisitActionMigrator = $linkVisitActionMigrator;
 
-        parent::__construct($sourceDef, $targetDef, $gcHelper);
+        parent::__construct($settings, $gcHelper);
     }
 
     protected function translateRow(&$row)

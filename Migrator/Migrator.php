@@ -79,16 +79,11 @@ class Migrator
     private $archiveLister;
 
     public function __construct(
-        SiteDefinition $sourceDefinition,
-        SiteDefinition $targetDefinition,
         GCHelper $gcHelper,
         MigratorSettings $migratorSettings,
         ArchiveLister $archiveLister
     )
     {
-        $this->sourceDefinition = $sourceDefinition;
-        $this->targetDefinition = $targetDefinition;
-
         $this->gcHelper       = $gcHelper;
         $this->settings       = $migratorSettings;
         $this->archiveLister  = $archiveLister;
@@ -98,15 +93,15 @@ class Migrator
 
     private function setupMigrators()
     {
-        $this->siteMigrator           = new SiteMigrator($this->sourceDefinition, $this->targetDefinition, $this->gcHelper);
-        $this->siteGoalMigrator       = new SiteGoalMigrator($this->sourceDefinition, $this->targetDefinition, $this->gcHelper, $this->siteMigrator);
-        $this->siteUrlMigrator        = new SiteUrlMigrator($this->sourceDefinition, $this->targetDefinition, $this->gcHelper, $this->siteMigrator);
-        $this->actionMigrator         = new ActionMigrator($this->sourceDefinition, $this->targetDefinition, $this->gcHelper);
-        $this->visitMigrator          = new VisitMigrator($this->sourceDefinition, $this->targetDefinition, $this->gcHelper, $this->siteMigrator, $this->actionMigrator);
-        $this->visitActionMigrator    = new LinkVisitActionMigrator($this->sourceDefinition, $this->targetDefinition, $this->gcHelper, $this->siteMigrator, $this->visitMigrator, $this->actionMigrator);
-        $this->conversionMigrator     = new ConversionMigrator($this->sourceDefinition, $this->targetDefinition, $this->gcHelper, $this->siteMigrator, $this->visitMigrator, $this->actionMigrator, $this->visitActionMigrator);
-        $this->conversionItemMigrator = new ConversionItemMigrator($this->sourceDefinition, $this->targetDefinition, $this->gcHelper, $this->siteMigrator, $this->visitMigrator, $this->actionMigrator);
-        $this->archiveMigrator        = new ArchiveMigrator($this->sourceDefinition, $this->targetDefinition, $this->gcHelper, $this->siteMigrator, $this->archiveLister);
+        $this->siteMigrator           = new SiteMigrator($this->settings, $this->gcHelper);
+        $this->siteGoalMigrator       = new SiteGoalMigrator($this->settings, $this->gcHelper, $this->siteMigrator);
+        $this->siteUrlMigrator        = new SiteUrlMigrator($this->settings, $this->gcHelper, $this->siteMigrator);
+        $this->actionMigrator         = new ActionMigrator($this->settings, $this->gcHelper);
+        $this->visitMigrator          = new VisitMigrator($this->settings, $this->gcHelper, $this->siteMigrator, $this->actionMigrator);
+        $this->visitActionMigrator    = new LinkVisitActionMigrator($this->settings, $this->gcHelper, $this->siteMigrator, $this->visitMigrator, $this->actionMigrator);
+        $this->conversionMigrator     = new ConversionMigrator($this->settings, $this->gcHelper, $this->siteMigrator, $this->visitMigrator, $this->actionMigrator, $this->visitActionMigrator);
+        $this->conversionItemMigrator = new ConversionItemMigrator($this->settings, $this->gcHelper, $this->siteMigrator, $this->visitMigrator, $this->actionMigrator);
+        $this->archiveMigrator        = new ArchiveMigrator($this->settings, $this->gcHelper, $this->siteMigrator, $this->archiveLister);
     }
 
     public function migrate()
@@ -133,21 +128,21 @@ class Migrator
     private function startTransaction()
     {
         Log::info('Start transaction');
-        $this->targetDefinition->getDbHelper()->startTransaction();
+        $this->settings->targetDef->getDbHelper()->startTransaction();
     }
 
     private function commitTransaction()
     {
         Log::info('Commit transaction');
-        $this->targetDefinition->getDbHelper()->commitTransaction();
+        $this->settings->targetDef->getDbHelper()->commitTransaction();
     }
 
     private function migrateSite()
     {
         Log::info('Migrating site and site config');
 
-        $sourceDbHelper = $this->sourceDefinition->getDbHelper();
-        $sourceSiteId = $this->sourceDefinition->getSiteId();
+        $sourceDbHelper = $this->settings->sourceDef->getDbHelper();
+        $sourceSiteId = $this->settings->sourceDef->getSiteId();
 
         $this->siteMigrator->migrate(
             $this->getBatchProvider(
@@ -179,7 +174,7 @@ class Migrator
     {
         Log::info('Migrating log data - visits');
 
-        $query = 'SELECT * FROM ' . $this->sourceDefinition->getDbHelper()->prefixTable('log_visit') . ' WHERE idsite = ' . $this->sourceDefinition->getSiteId() . ' ORDER BY idvisit ASC';
+        $query = 'SELECT * FROM ' . $this->settings->sourceDef->getDbHelper()->prefixTable('log_visit') . ' WHERE idsite = ' . $this->settings->sourceDef->getSiteId() . ' ORDER BY idvisit ASC';
 
         if ($this->settings->dateFrom) {
             $query .= ' AND `visit_last_action_time` >= \'' . $this->settings->dateFrom->format('Y-m-d') . '\'';
@@ -222,7 +217,7 @@ class Migrator
     {
         Log::info('Migrating archive data');
 
-        $this->archiveMigrator->migrate($this->sourceDefinition->getSiteId(), $this->settings->dateFrom, $this->settings->dateTo);
+        $this->archiveMigrator->migrate($this->settings->sourceDef->getSiteId(), $this->settings->dateFrom, $this->settings->dateTo);
     }
 
     private function getLogVisitQueriesFor($table, $orderBy = array())
@@ -230,7 +225,7 @@ class Migrator
         $visitIdRanges = $this->visitMigrator->getIdRanges();
 
         if (count($visitIdRanges) > 0) {
-            $baseQuery = "SELECT * FROM " . $this->sourceDefinition->getDbHelper()->prefixTable($table) . ' WHERE idvisit IN ';
+            $baseQuery = "SELECT * FROM " . $this->settings->sourceDef->getDbHelper()->prefixTable($table) . ' WHERE idvisit IN ';
             $queries   = array();
 
 
@@ -266,6 +261,6 @@ class Migrator
 
     private function getBatchProvider($query)
     {
-        return new BatchProvider($query, $this->sourceDefinition->getDbHelper(), $this->gcHelper, 10000);
+        return new BatchProvider($query, $this->settings->sourceDef->getDbHelper(), $this->gcHelper, 10000);
     }
 }

@@ -30,8 +30,7 @@ class LinkVisitActionMigrator extends TableMigrator
     protected $actionMigrator;
 
     public function __construct(
-        SiteDefinition $sourceDef,
-        SiteDefinition $targetDef,
+        MigratorSettings $settings,
         GCHelper $gcHelper,
         TableMigrator $siteMigrator,
         TableMigrator $visitMigrator,
@@ -41,7 +40,7 @@ class LinkVisitActionMigrator extends TableMigrator
         $this->visitMigrator  = $visitMigrator;
         $this->actionMigrator = $actionMigrator;
 
-        parent::__construct($sourceDef, $targetDef, $gcHelper);
+        parent::__construct($settings, $gcHelper);
     }
 
 

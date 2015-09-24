@@ -20,15 +20,14 @@ class SiteGoalMigrator extends TableMigrator
     protected $siteMigrator;
 
     public function __construct(
-        SiteDefinition $sourceDef,
-        SiteDefinition $targetDef,
+        MigratorSettings $settings,
         GCHelper $gcHelper,
         TableMigrator $siteMigrator
     )
     {
         $this->siteMigrator = $siteMigrator;
 
-        parent::__construct($sourceDef, $targetDef, $gcHelper);
+        parent::__construct($settings, $gcHelper);
     }
 
     protected function translateRow(&$row)
