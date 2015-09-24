@@ -81,12 +81,15 @@ class ActionMigrator extends BaseMigrator
 
     public function getNewId($idAction)
     {
+        if($idAction == null || $idAction < 1){
+            return $idAction;
+        }
+
         if ($this->ensureActionIsMigrated($idAction)) {
             return $this->idMap[$idAction];
         } else {
-            return 0;
+            throw new \InvalidArgumentException('Id ' . $idAction . ' not found in ' . __CLASS__);
         }
-
     }
 
     /**
