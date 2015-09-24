@@ -9,8 +9,8 @@
 
 namespace Piwik\Plugins\SiteMigration\Migrator;
 
-use Piwik\Plugins\SiteMigration\Helper\DBHelper;
 use Piwik\Plugins\SiteMigration\Helper\GCHelper;
+use Piwik\Plugins\SiteMigration\Model\SiteDefinition;
 
 class LinkVisitActionMigrator extends TableMigrator
 {
@@ -30,7 +30,7 @@ class LinkVisitActionMigrator extends TableMigrator
     protected $actionMigrator;
 
     public function __construct(
-        DBHelper $targetDb,
+        MigratorSettings $settings,
         GCHelper $gcHelper,
         TableMigrator $siteMigrator,
         TableMigrator $visitMigrator,
@@ -40,7 +40,7 @@ class LinkVisitActionMigrator extends TableMigrator
         $this->visitMigrator  = $visitMigrator;
         $this->actionMigrator = $actionMigrator;
 
-        parent::__construct($targetDb, $gcHelper);
+        parent::__construct($settings, $gcHelper);
     }
 
 

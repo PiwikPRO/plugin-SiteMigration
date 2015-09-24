@@ -7,24 +7,19 @@
  * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
-namespace Piwik\Plugins\SiteMigration\Test;
+namespace Piwik\Plugins\SiteMigration\tests\Unit;
 
 use Piwik\Plugins\SiteMigration\Migrator\ConversionMigrator;
 
 /**
  * @group SiteMigration
  */
-class ConversionMigratorTest extends \PHPUnit_Framework_TestCase
+class ConversionMigratorTest extends BaseMigratorTest
 {
     /**
      * @var ConversionMigrator
      */
     protected $conversionMigrator;
-
-    /**
-     * @var \PHPUnit_Framework_MockObject_MockObject
-     */
-    protected $toDbHelper;
 
     /**
      * @var \PHPUnit_Framework_MockObject_MockObject
@@ -61,14 +56,7 @@ class ConversionMigratorTest extends \PHPUnit_Framework_TestCase
 
     protected function reset()
     {
-        $this->toDbHelper = $this->getMock(
-            'Piwik\Plugins\SiteMigration\Helper\DBHelper',
-            array('executeInsert', 'lastInsertId', 'getAdapter', 'prefixTable', 'acquireLock', 'releaseLock'),
-            array(),
-            '',
-            false
-        );
-
+        parent::reset();
 
         $this->actionMigrator = $this->getMock(
             'Piwik\Plugins\SiteMigration\Migrator\ActionMigrator',
@@ -104,7 +92,15 @@ class ConversionMigratorTest extends \PHPUnit_Framework_TestCase
 
         $this->gcHelper = $this->getMock('Piwik\Plugins\SiteMigration\Helper\GCHelper', array(), array(), '', false);
 
-        $this->conversionMigrator = new ConversionMigrator($this->toDbHelper, $this->gcHelper, $this->siteMigrator, $this->visitMigrator, $this->actionMigrator, $this->linkVisitActionMigrator);
+        $this->conversionMigrator = new ConversionMigrator(
+            $this->sourceDefinition,
+            $this->targetDefinition,
+            $this->gcHelper,
+            $this->siteMigrator,
+            $this->visitMigrator,
+            $this->actionMigrator,
+            $this->linkVisitActionMigrator
+        );
 
     }
 

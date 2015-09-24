@@ -9,8 +9,8 @@
 
 namespace Piwik\Plugins\SiteMigration\Migrator;
 
-use Piwik\Plugins\SiteMigration\Helper\DBHelper;
 use Piwik\Plugins\SiteMigration\Helper\GCHelper;
+use Piwik\Plugins\SiteMigration\Model\SiteDefinition;
 
 class ConversionItemMigrator extends TableMigrator
 {
@@ -40,7 +40,7 @@ class ConversionItemMigrator extends TableMigrator
     );
 
     public function __construct(
-        DBHelper $targetDb,
+        MigratorSettings $settings,
         GCHelper $gcHelper,
         TableMigrator $siteMigrator,
         TableMigrator $visitMigrator,
@@ -50,7 +50,7 @@ class ConversionItemMigrator extends TableMigrator
         $this->visitMigrator  = $visitMigrator;
         $this->actionMigrator = $actionMigrator;
 
-        parent::__construct($targetDb, $gcHelper);
+        parent::__construct($settings, $gcHelper);
     }
 
     protected function translateRow(&$row)
@@ -59,10 +59,6 @@ class ConversionItemMigrator extends TableMigrator
         $row['idvisit'] = $this->visitMigrator->getNewId($row['idvisit']);
 
         foreach ($this->actionsToTranslate as $translationKey) {
-            if ($row[$translationKey] == 0) {
-                continue;
-            }
-
             $row[$translationKey] = $this->actionMigrator->getNewId($row[$translationKey]);
         }
     }

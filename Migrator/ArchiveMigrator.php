@@ -13,22 +13,12 @@ use Piwik\Archive;
 use Piwik\Db\Schema;
 use Piwik\DbHelper as PiwikDbHelper;
 use Piwik\Log;
-use Piwik\Plugins\SiteMigration\Helper\DBHelper;
+use Piwik\Plugins\SiteMigration\Helper\GCHelper;
 use Piwik\Plugins\SiteMigration\Migrator\Archive\ArchiveLister;
 use Piwik\Sequence;
 
-class ArchiveMigrator
+class ArchiveMigrator extends BaseMigrator
 {
-    /**
-     * @var DBHelper
-     */
-    private $sourceDb;
-
-    /**
-     * @var DBHelper
-     */
-    private $targetDb;
-
     /**
      * @var SiteMigrator
      */
@@ -39,19 +29,17 @@ class ArchiveMigrator
      */
     private $archiveLister;
 
-    /**
-     * Map of old archive IDs (source DB) to new archive IDs (target DB).
-     *
-     * @var int[]
-     */
-    private $archiveIdMap = array();
-
-    public function __construct(DBHelper $sourceDb, DBHelper $targetDb, SiteMigrator $siteMigrator, ArchiveLister $archiveLister)
+    public function __construct(
+        MigratorSettings $settings,
+        GCHelper $gcHelper,
+        SiteMigrator $siteMigrator,
+        ArchiveLister $archiveLister
+    )
     {
-        $this->sourceDb = $sourceDb;
-        $this->targetDb = $targetDb;
         $this->siteMigrator = $siteMigrator;
         $this->archiveLister = $archiveLister;
+
+        parent::__construct($settings, $gcHelper);
     }
 
     public function migrate($siteId, \DateTime $from = null, \DateTime $to = null)
@@ -87,29 +75,31 @@ class ArchiveMigrator
         $record['idarchive'] = $this->getArchiveId($archiveDate, $record['idarchive']);
         $record['idsite']    = $this->siteMigrator->getNewId($record['idsite']);
 
-        $this->targetDb->executeInsert($archiveTable, $record);
+        $this->targetDef->getDbHelper()->executeInsert($archiveTable, $record);
     }
 
     private function ensureTargetTableExists($archiveTable)
     {
-        $data = $this->targetDb->getAdapter()->fetchCol(
-            "SHOW TABLES LIKE '" . $this->targetDb->prefixTable($archiveTable) . "'"
+        $targetDbHelper = $this->targetDef->getDbHelper();
+        $data = $targetDbHelper->getAdapter()->fetchCol(
+            "SHOW TABLES LIKE '" . $targetDbHelper->prefixTable($archiveTable) . "'"
         );
 
         if (count($data) == 0) {
             $tableType = (strpos($archiveTable, 'blob')) ? 'archive_blob' : 'archive_numeric';
             $sql       = PiwikDbHelper::getTableCreateSql($tableType);
             $sql       = str_replace($tableType, $archiveTable, $sql);
-            $sql       = str_replace($this->sourceDb->prefixTable($tableType), $this->targetDb->prefixTable($tableType), $sql);
+            $sql       = str_replace($this->sourceDef->getDbHelper()->prefixTable($tableType), $targetDbHelper->prefixTable($tableType), $sql);
 
-            $this->targetDb->getAdapter()->query($sql);
+            $targetDbHelper->getAdapter()->query($sql);
         }
     }
 
     private function getArchiveRecordsQuery($archiveTable, $idSite)
     {
-        $query = $this->sourceDb->getAdapter()->prepare(
-            'SELECT * FROM ' . $this->sourceDb->prefixTable($archiveTable) . ' WHERE idsite = ?'
+        $sourceDbHelper = $this->sourceDef->getDbHelper();
+        $query = $sourceDbHelper->getAdapter()->prepare(
+            'SELECT * FROM ' . $sourceDbHelper->prefixTable($archiveTable) . ' WHERE idsite = ?'
         );
         $query->execute(array($idSite));
 
@@ -118,21 +108,23 @@ class ArchiveMigrator
 
     private function getArchiveId($archiveDate, $archiveId)
     {
-        if (! isset($this->archiveIdMap[$archiveDate][$archiveId])) {
+        if (! isset($this->idMap[$archiveDate][$archiveId])) {
+
+            $targetDbHelper = $this->targetDef->getDbHelper();
 
             $sequence = new Sequence(
-                $this->targetDb->prefixTable('archive_numeric_' . $archiveDate),
-                $this->targetDb->getAdapter(),
-                $this->targetDb->prefixTable('')
+                $targetDbHelper->prefixTable('archive_numeric_' . $archiveDate),
+                $targetDbHelper->getAdapter(),
+                $targetDbHelper->prefixTable('')
             );
 
             if (! $sequence->exists()) {
                 $sequence->create();
             }
 
-            $this->archiveIdMap[$archiveDate][$archiveId] = $sequence->getNextId();
+            $this->idMap[$archiveDate][$archiveId] = $sequence->getNextId();
         }
 
-        return $this->archiveIdMap[$archiveDate][$archiveId];
+        return $this->idMap[$archiveDate][$archiveId];
     }
 }

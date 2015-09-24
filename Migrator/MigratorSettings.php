@@ -9,27 +9,29 @@
 
 namespace Piwik\Plugins\SiteMigration\Migrator;
 
+use Piwik\Plugins\SiteMigration\Model\SiteDefinition;
+
 class MigratorSettings
 {
+    /**
+     * @var bool
+     */
     public $skipArchiveData;
 
+    /**
+     * @var bool
+     */
     public $skipLogData;
 
-    public $idSite;
+    /**
+     * @var SiteDefinition
+     */
+    public $sourceDef;
 
-    public $site;
-
-    public $dbHost;
-
-    public $dbUsername;
-
-    public $dbPassword;
-
-    public $dbName;
-
-    public $dbPrefix;
-
-    public $dbPort;
+    /**
+     * @var SiteDefinition
+     */
+    public $targetDef;
 
     /**
      * @var \DateTime|null
@@ -40,6 +42,4 @@ class MigratorSettings
      * @var \DateTime|null
      */
     public $dateTo;
-
-    public $newIdSite;
 }

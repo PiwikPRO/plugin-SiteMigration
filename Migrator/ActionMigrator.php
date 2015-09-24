@@ -9,23 +9,9 @@
 
 namespace Piwik\Plugins\SiteMigration\Migrator;
 
-use Piwik\Plugins\SiteMigration\Helper\DBHelper;
-
-class ActionMigrator
+class ActionMigrator extends BaseMigrator
 {
-    protected $sourceDb;
-
-    protected $targetDb;
-
     protected $existingActions = array();
-
-    protected $idMap = array();
-
-    public function __construct(DBHelper $sourceDb, DBHelper $targetDb)
-    {
-        $this->sourceDb = $sourceDb;
-        $this->targetDb = $targetDb;
-    }
 
     protected function processAction($action)
     {
@@ -37,17 +23,21 @@ class ActionMigrator
             return;
         }
 
+        $targetDbHelper = $this->targetDef->getDbHelper();
+
         $idAction = $action['idaction'];
         unset($action['idaction']);
-        $this->targetDb->executeInsert('log_action', $action);
-        $this->idMap[$idAction] = $this->targetDb->lastInsertId();
+        $targetDbHelper->executeInsert('log_action', $action);
+        $this->idMap[$idAction] = $targetDbHelper->lastInsertId();
         unset($action);
     }
 
     public function loadExistingActions()
     {
-        $query = $this->targetDb->getAdapter()->prepare(
-            'SELECT idaction, hash, type FROM ' . $this->targetDb->prefixTable('log_action')
+        $targetDbHelper = $this->targetDef->getDbHelper();
+
+        $query = $targetDbHelper->getAdapter()->prepare(
+            'SELECT idaction, hash, type FROM ' . $targetDbHelper->prefixTable('log_action')
         );
         $query->execute();
 
@@ -72,8 +62,10 @@ class ActionMigrator
         if (array_key_exists($idAction, $this->idMap)) {
             return true;
         } else {
-            $action = $this->sourceDb->getAdapter()->fetchRow(
-                'SELECT * FROM ' . $this->sourceDb->prefixTable('log_action') . ' WHERE idaction = ?',
+            $sourceDbHelper = $this->sourceDef->getDbHelper();
+
+            $action = $sourceDbHelper->getAdapter()->fetchRow(
+                'SELECT * FROM ' . $sourceDbHelper->prefixTable('log_action') . ' WHERE idaction = ?',
                 array($idAction)
             );
 
@@ -89,12 +81,15 @@ class ActionMigrator
 
     public function getNewId($idAction)
     {
+        if($idAction == null || $idAction < 1){
+            return $idAction;
+        }
+
         if ($this->ensureActionIsMigrated($idAction)) {
             return $this->idMap[$idAction];
         } else {
-            return 0;
+            throw new \InvalidArgumentException('Id ' . $idAction . ' not found in ' . __CLASS__);
         }
-
     }
 
     /**

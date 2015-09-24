@@ -9,37 +9,12 @@
 
 namespace Piwik\Plugins\SiteMigration\Migrator;
 
-use Piwik\Plugins\SiteMigration\Exception\MissingIDTranslationException;
-use Piwik\Plugins\SiteMigration\Helper\DBHelper;
-use Piwik\Plugins\SiteMigration\Helper\GCHelper;
-
 /**
  * Base class for table migrators.
  */
-abstract class TableMigrator
+abstract class TableMigrator extends BaseMigrator
 {
     protected $skipped = 0;
-
-    /**
-     * @var DBHelper
-     */
-    protected $targetDb;
-
-    /**
-     * @var GCHelper
-     */
-    protected $gcHelper;
-
-    /**
-     * @var int[]
-     */
-    protected $idMap = array();
-
-    public function __construct(DBHelper $targetDb, GCHelper $gcHelper)
-    {
-        $this->targetDb = $targetDb;
-        $this->gcHelper = $gcHelper;
-    }
 
     public function migrate(\Traversable $dataProvider)
     {
@@ -50,44 +25,16 @@ abstract class TableMigrator
 
     protected function processRow(&$row)
     {
+        $targetDbHelper = $this->targetDef->getDbHelper();
+
         $id = $this->getIdFromRow($row);
         $this->translateRow($row);
 
-        $this->targetDb->executeInsert($this->getTableName(), $row);
+        $targetDbHelper->executeInsert($this->getTableName(), $row);
 
         if ($id != null) {
-            $this->addNewId($id, $this->targetDb->lastInsertId());
+            $this->addNewId($id, $targetDbHelper->lastInsertId());
         }
-    }
-
-    /**
-     * @param int $oldId
-     * @return int
-     */
-    public function getNewId($oldId)
-    {
-        if (!array_key_exists($oldId, $this->idMap)) {
-            throw new \InvalidArgumentException('Id ' . $oldId . ' not found in ' . __CLASS__);
-        }
-
-        return $this->idMap[$oldId];
-    }
-
-    /**
-     * @param int $oldId
-     * @param int $newId
-     */
-    public function addNewId($oldId, $newId)
-    {
-        $this->idMap[$oldId] = $newId;
-    }
-
-    /**
-     * @return int[]
-     */
-    public function getIdMap()
-    {
-        return $this->idMap;
     }
 
     public function checkColumns()
