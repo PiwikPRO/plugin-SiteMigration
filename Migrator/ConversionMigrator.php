@@ -59,13 +59,7 @@ class ConversionMigrator extends TableMigrator
             $row['idlink_va'] = $this->linkVisitActionMigrator->getNewId($row['idlink_va']);
         }
 
-        if ($row['idaction_url']) {
-            $row['idaction_url'] = $this->actionMigrator->getNewId(
-                $row['idaction_url']
-            );
-        } else {
-            $row['idaction_url'] = 0;
-        }
+        $row['idaction_url'] = $this->actionMigrator->getNewId( $row['idaction_url']);
     }
 
     /**

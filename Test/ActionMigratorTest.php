@@ -170,6 +170,12 @@ class ActionMigratorTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($this->dummyExistingActions, $this->actionMigrator->getExistingActions());
     }
 
+    public function test_getNewIdSpecialActionsIds(){
+        $this->assertNull($this->actionMigrator->getNewId(null));
+        $this->assertEquals(0, $this->actionMigrator->getNewId(0));
+        $this->assertEquals(-1, $this->actionMigrator->getNewId(-1));
+    }
+
     protected function setupEnsureActionIsMigratedMigrationTest($action)
     {
         $this->setupDbHelperGetAdapter($this->fromDbHelper);
