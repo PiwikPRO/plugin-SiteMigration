@@ -15,28 +15,13 @@ use Piwik\Plugins\SiteMigration\Migrator\ActionMigrator;
 /**
  * @group SiteMigration
  */
-class ActionMigratorTest extends \PHPUnit_Framework_TestCase
+class ActionMigratorTest extends BaseMigratorTest
 {
 
     /**
      * @var actionMigrator
      */
     protected $actionMigrator;
-
-    /**
-     * @var \PHPUnit_Framework_MockObject_MockObject
-     */
-    protected $fromDbHelper;
-
-    /**
-     * @var \PHPUnit_Framework_MockObject_MockObject
-     */
-    protected $toDbHelper;
-
-    /**
-     * @var \PHPUnit_Framework_MockObject_MockObject
-     */
-    protected $adapter;
 
     /**
      * @var \PHPUnit_Framework_MockObject_MockObject
@@ -58,33 +43,12 @@ class ActionMigratorTest extends \PHPUnit_Framework_TestCase
     {
         parent::setUp();
 
-        $this->resetActionConfig();
+        $this->reset();
     }
 
-    protected function resetActionConfig()
+    protected function reset()
     {
-        $this->adapter      = $this->getMock(
-            'Zend_Db_Adapter_Pdo_Mysql',
-            array('fetchRow', 'fetchAll', 'prepare'),
-            array(),
-            '',
-            false
-        );
-        $this->fromDbHelper = $this->getMock(
-            'Piwik\Plugins\SiteMigration\Helper\DBHelper',
-            array('executeInsert', 'lastInsertId', 'getAdapter', 'prefixTable'),
-            array(),
-            '',
-            false
-        );
-
-        $this->toDbHelper = $this->getMock(
-            'Piwik\Plugins\SiteMigration\Helper\DBHelper',
-            array('executeInsert', 'lastInsertId', 'getAdapter', 'prefixTable'),
-            array(),
-            '',
-            false
-        );
+        parent::reset();
 
         $this->statement = $this->getMock(
             'Zend_Db_Statement_Pdo',
@@ -94,8 +58,7 @@ class ActionMigratorTest extends \PHPUnit_Framework_TestCase
             false
         );
 
-        $this->actionMigrator = new ActionMigrator($this->fromDbHelper, $this->toDbHelper);
-
+        $this->actionMigrator = new ActionMigrator($this->sourceDefinition, $this->targetDefinition, $this->gcHelper);
     }
 
 

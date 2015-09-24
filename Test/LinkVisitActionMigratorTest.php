@@ -14,17 +14,12 @@ use Piwik\Plugins\SiteMigration\Migrator\LinkVisitActionMigrator;
 /**
  * @group SiteMigration
  */
-class LinkVisitActionMigratorTest extends \PHPUnit_Framework_TestCase
+class LinkVisitActionMigratorTest extends BaseMigratorTest
 {
     /**
      * @var LinkVisitActionMigrator
      */
     protected $linkVisitActionMigrator;
-
-    /**
-     * @var \PHPUnit_Framework_MockObject_MockObject
-     */
-    protected $toDbHelper;
 
     /**
      * @var \PHPUnit_Framework_MockObject_MockObject
@@ -57,13 +52,7 @@ class LinkVisitActionMigratorTest extends \PHPUnit_Framework_TestCase
 
     protected function reset()
     {
-        $this->toDbHelper = $this->getMock(
-            'Piwik\Plugins\SiteMigration\Helper\DBHelper',
-            array('executeInsert', 'lastInsertId', 'getAdapter', 'prefixTable', 'acquireLock', 'releaseLock'),
-            array(),
-            '',
-            false
-        );
+        parent::reset();
 
         $this->actionMigrator = $this->getMock(
             'Piwik\Plugins\SiteMigration\Migrator\ActionMigrator',
@@ -91,7 +80,14 @@ class LinkVisitActionMigratorTest extends \PHPUnit_Framework_TestCase
 
         $this->gcHelper = $this->getMock('Piwik\Plugins\SiteMigration\Helper\GCHelper', array(), array(), '', false);
 
-        $this->linkVisitActionMigrator = new LinkVisitActionMigrator($this->toDbHelper, $this->gcHelper, $this->siteMigrator, $this->visitMigrator, $this->actionMigrator);
+        $this->linkVisitActionMigrator = new LinkVisitActionMigrator(
+            $this->sourceDefinition,
+            $this->targetDefinition,
+            $this->gcHelper,
+            $this->siteMigrator,
+            $this->visitMigrator,
+            $this->actionMigrator
+        );
     }
 
 
