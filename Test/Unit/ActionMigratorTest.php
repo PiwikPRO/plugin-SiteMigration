@@ -8,7 +8,7 @@
  *
  */
 
-namespace Piwik\Plugins\SiteMigration\Test;
+namespace Piwik\Plugins\SiteMigration\Test\Unit;
 
 use Piwik\Plugins\SiteMigration\Migrator\ActionMigrator;
 
