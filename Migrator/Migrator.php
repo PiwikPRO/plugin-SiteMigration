@@ -139,19 +139,19 @@ class Migrator
 
         $this->siteMigrator->migrate(
             $this->getBatchProvider(
-                'SELECT * FROM ' . $this->sourceDbHelper->prefixTable('site') . ' WHERE idsite = ' . $this->settings->idSite
+                'SELECT * FROM ' . $this->sourceDbHelper->prefixTable('site') . ' WHERE idsite = ' . $this->settings->idSite . ' ORDER BY idsite ASC'
             )
         );
 
         $this->siteGoalMigrator->migrate(
             $this->getBatchProvider(
-                'SELECT * FROM ' . $this->sourceDbHelper->prefixTable('goal') . ' WHERE idsite = ' . $this->settings->idSite
+                'SELECT * FROM ' . $this->sourceDbHelper->prefixTable('goal') . ' WHERE idsite = ' . $this->settings->idSite . ' ORDER BY idsite ASC, idgoal ASC'
             )
         );
 
         $this->siteUrlMigrator->migrate(
             $this->getBatchProvider(
-                'SELECT * FROM ' . $this->sourceDbHelper->prefixTable('site_url') . ' WHERE idsite = ' . $this->settings->idSite
+                'SELECT * FROM ' . $this->sourceDbHelper->prefixTable('site_url') . ' WHERE idsite = ' . $this->settings->idSite . ' ORDER BY idsite ASC, url ASC'
             )
         );
     }
@@ -177,6 +177,8 @@ class Migrator
             $query .= ' AND `visit_last_action_time` < \'' . $this->settings->dateTo->format('Y-m-d') . '\'';
         }
 
+        $query .= ' ORDER BY idvisit ASC';
+
         $this->visitMigrator->migrate(
             $this->getBatchProvider($query)
         );
@@ -186,7 +188,7 @@ class Migrator
     {
         Log::info('Migrating log data - link visit action');
 
-        $queries = $this->getLogVisitQueriesFor('log_link_visit_action');
+        $queries = $this->getLogVisitQueriesForLinkVisitAction();
 
         if (count($queries) > 0) {
             $this->visitActionMigrator->migrate($this->getBatchProvider($queries));
@@ -197,8 +199,8 @@ class Migrator
     {
         Log::info('Migrating log data - conversions and conversion items');
 
-        $queries     = $this->getLogVisitQueriesFor('log_conversion');
-        $itemQueries = $this->getLogVisitQueriesFor('log_conversion_item');
+        $queries     = $this->getLogVisitQueriesForLogConversion();
+        $itemQueries = $this->getLogVisitQueriesForLogConversionItem();
 
         if (count($queries) > 0) {
             $this->conversionMigrator->migrate($this->getBatchProvider($queries));
@@ -213,7 +215,7 @@ class Migrator
         $this->archiveMigrator->migrate($this->settings->idSite, $this->settings->dateFrom, $this->settings->dateTo);
     }
 
-    private function getLogVisitQueriesFor($table)
+    private function getLogVisitQueriesFor($table, $orderBy = array())
     {
         $visitIdRanges = $this->visitMigrator->getIdRanges();
 
@@ -223,13 +225,33 @@ class Migrator
 
 
             foreach ($visitIdRanges as $range) {
-                $queries[] = $baseQuery . ' (' . implode(', ', $range) . ')';
+                $newQuery = $baseQuery . ' (' . implode(', ', $range) . ')';
+
+                if (count($orderBy) != 0) {
+                    $newQuery .= ' ORDER BY ' . implode(',', $orderBy);
+            }
+
+                $queries[] = $newQuery;
             }
 
             return $queries;
         } else {
             return array();
         }
+    }
+
+    private function getLogVisitQueriesForLogConversion()
+    {
+        return $this->getLogVisitQueriesFor('log_conversion', array('idvisit', 'idgoal', 'buster'));
+    }
+
+    private function getLogVisitQueriesForLogConversionItem(){
+        return $this->getLogVisitQueriesFor('log_conversion_item', array('idvisit', 'idorder', 'idaction_sku'));
+    }
+
+    private function getLogVisitQueriesForLinkVisitAction()
+    {
+        return $this->getLogVisitQueriesFor('log_link_visit_action', array('idlink_va'));
     }
 
     private function getBatchProvider($query)
