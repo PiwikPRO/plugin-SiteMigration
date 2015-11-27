@@ -59,12 +59,14 @@ class MigrateSite extends ConsoleCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $self = $this;
+
         // Set memory limit to off
         @ini_set('memory_limit', -1);
-        Piwik::doAsSuperUser(function() use ($input, $output){
+        Piwik::doAsSuperUser(function() use ($input, $output, $self){
             $settings = new MigratorSettings();
             $settings->idSite = $input->getArgument('idSite');
-            $settings->site = $this->getSite($settings->idSite);
+            $settings->site = $self->getSite($settings->idSite);
             $settings->dateFrom = $input->getOption('date-from') ? new \DateTime($input->getOption('date-from')) : null;
             $settings->dateTo = $input->getOption('date-to') ? new \DateTime($input->getOption('date-to')) : null;
             $settings->skipArchiveData = $input->getOption('skip-archive-data');
@@ -73,7 +75,7 @@ class MigrateSite extends ConsoleCommand
             $config = Db::getDatabaseConfig();
             $startTime = microtime(true);
 
-            $this->createTargetDatabaseConfig($input, $output, $config);
+            $self->createTargetDatabaseConfig($input, $output, $config);
 
             $tmpConfig = $config;
             $sourceDb = Db::get();
@@ -103,7 +105,7 @@ class MigrateSite extends ConsoleCommand
     }
 
 
-    protected function getSite($idSite)
+    public function getSite($idSite)
     {
         if (!Site::getSite($idSite)) {
             throw new \InvalidArgumentException('idSite is not a valid, no such site found');
@@ -115,7 +117,7 @@ class MigrateSite extends ConsoleCommand
         );
     }
 
-    private function createTargetDatabaseConfig(InputInterface $input, OutputInterface $output, &$config)
+    public function createTargetDatabaseConfig(InputInterface $input, OutputInterface $output, &$config)
     {
         $notNullValidator = function ($answer) {
             if (strlen(trim($answer)) == 0) {
