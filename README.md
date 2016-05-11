@@ -40,7 +40,6 @@ You can use command options: `--date-from` and `--date-to`.
 
 Just add the `--skip-archive-data` option.
 
-
 **How do I migrate the archived data and skip the tracking data?**
 
 Just add the `--skip-log-data` option.
@@ -48,6 +47,16 @@ Just add the `--skip-log-data` option.
 **Can I run the command on the Target Piwik server (where data will be imported)?**
 
 No, you must run the command from the source Piwik server (the server which contains the data you want to migrate).
+
+**Can I run SiteMigration in big load environment?**
+
+That is not advised. Process of moving large amounts of data may interfere with regular processing.
+
+**Will SiteMigration take full data into the account?**
+
+Data related to some of the plugins may be lost. If you are using such, we don't advise using automated migration process provided by this plugin.
+
+We strongly advise to test whole process against your use case before using it in production environment.
 
 ## Changelog
 
