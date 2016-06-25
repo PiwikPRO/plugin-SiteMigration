@@ -7,7 +7,7 @@
  * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
-namespace Piwik\Plugins\SiteMigration\Test;
+namespace Piwik\Plugins\SiteMigration\Test\Unit;
 
 use Piwik\Plugins\SiteMigration\Migrator\ConversionItemMigrator;
 
@@ -129,7 +129,7 @@ class ConversionItemMigratorTest extends \PHPUnit_Framework_TestCase
 
         $this->siteMigrator->expects($this->once())->method('getNewId')->with(1)->willReturn(2);
         $this->visitMigrator->expects($this->once())->method('getNewId')->with(3)->willReturn(4);
-        $this->actionMigrator->expects($this->exactly(6))->method('getNewId')->will(
+        $this->actionMigrator->expects($this->exactly(7))->method('getNewId')->will(
             $this->onConsecutiveCalls(2, 4, 6, 8, 12, 14, 16, 18, 20)
         );
 

@@ -59,10 +59,6 @@ class ConversionItemMigrator extends TableMigrator
         $row['idvisit'] = $this->visitMigrator->getNewId($row['idvisit']);
 
         foreach ($this->actionsToTranslate as $translationKey) {
-            if ($row[$translationKey] == 0) {
-                continue;
-            }
-
             $row[$translationKey] = $this->actionMigrator->getNewId($row[$translationKey]);
         }
     }
