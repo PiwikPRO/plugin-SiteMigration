@@ -27,6 +27,15 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class MigrateSite extends ConsoleCommand
 {
+    protected static $DB_CONFIG_MAPPING = array(
+        'host' => 'db-host',
+        'username' => 'db-username',
+        'password' => 'db-password',
+        'dbname' => 'db-name',
+        'port' => 'db-port',
+        'tables_prefix' => 'db-prefix'
+    );
+
     protected function configure()
     {
         $this->setName('migration:site');
@@ -71,24 +80,24 @@ class MigrateSite extends ConsoleCommand
             $settings->skipArchiveData = $input->getOption('skip-archive-data');
             $settings->skipLogData = $input->getOption('skip-log-data');
 
-            $config = Db::getDatabaseConfig();
+            $localConfig = Db::getDatabaseConfig();
             $startTime = microtime(true);
 
-            $self->createTargetDatabaseConfig($input, $output, $config);
+            $targetConfig = $self->createTargetDatabaseConfig($input, $output, $localConfig);
 
-            $tmpConfig = $config;
             $sourceDb = Db::get();
             try {
-                $targetDb = @Db\Adapter::factory($config['adapter'], $tmpConfig);
+                $tmpTargetConfig = $targetConfig; //The factory removes some necessary keys
+                $targetDb = @Db\Adapter::factory($targetConfig['adapter'], $tmpTargetConfig);
             } catch (\Exception $e) {
                 throw new \RuntimeException('Unable to connect to the target database: ' . $e->getMessage(), 0, $e);
             }
 
-            $sourceDbHelper = new DBHelper($sourceDb, Db::getDatabaseConfig());
+            $sourceDbHelper = new DBHelper($sourceDb, $localConfig);
 
             $migratorFacade = new Migrator(
                 $sourceDbHelper,
-                new DBHelper($targetDb, $config),
+                new DBHelper($targetDb, $targetConfig),
                 GCHelper::getInstance(),
                 $settings,
                 new ArchiveLister($sourceDbHelper)
@@ -116,101 +125,15 @@ class MigrateSite extends ConsoleCommand
         );
     }
 
-    public function createTargetDatabaseConfig(InputInterface $input, OutputInterface $output, &$config)
+    public function createTargetDatabaseConfig(InputInterface $input, OutputInterface $output, $baseConfig)
     {
-        $notNullValidator = function ($answer) {
-            if (strlen(trim($answer)) == 0) {
-                throw new \InvalidArgumentException('This value should not be empty');
-            }
-
-            return $answer;
-        };
-
-        $dummyValidator = function ($answer) {
-            return $answer;
-        };
-
-        $config['host'] = $this->ensureOptionsIsProvided(
-            'db-host',
-            $input,
-            $output,
-            'Please provide the destination database host',
-            $notNullValidator,
-            false,
-            'localhost'
-        );
-
-        $config['username'] = $this->ensureOptionsIsProvided(
-            'db-username',
-            $input,
-            $output,
-            'Please provide the destination database username',
-            $notNullValidator
-        );
-
-        $config['password'] = $this->ensureOptionsIsProvided(
-            'db-password',
-            $input,
-            $output,
-            'Please provide the destination database password',
-            $dummyValidator,
-            false,
-            null,
-            true
-        );
-
-        $config['dbname'] = $this->ensureOptionsIsProvided(
-            'db-name',
-            $input,
-            $output,
-            'Please provide the destination database name',
-            $notNullValidator
-        );
-
-        $config['port'] = $input->getOption('db-port');
-        $config['tables_prefix'] = $input->getOption('db-prefix');
-    }
-
-    public function ensureOptionsIsProvided($optionName, InputInterface $input, OutputInterface $output, $question, $validator, $attempts = false, $default = null, $hidden = false)
-    {
-        if (!$input->getOption($optionName)) {
-            return $this->askAndValidate($output, $question, $validator, $attempts, $default, $hidden);
+        foreach (static::$DB_CONFIG_MAPPING as $configKey => $configParam) {
+            $option = $input->getOption($configParam);
+            if ($option) {
+                $baseConfig[$configKey] = $option;
+            };
         }
 
-        return $input->getOption($optionName);
-    }
-
-    protected function askAndValidate(
-        OutputInterface $output,
-        $question,
-        $validator,
-        $attempts = false,
-        $default = null,
-        $hidden = false
-    )
-    {
-        /**
-         * @var $dialog DialogHelper
-         */
-        $dialog = $this->getHelperSet()->get('dialog');
-        $question = '<question>' . $question . (($default) ? " [$default]" : '') . ':</question> ';
-
-        if (!$hidden) {
-            return $dialog->askAndValidate(
-                $output,
-                $question,
-                $validator,
-                $attempts,
-                $default
-            );
-        } else {
-            return $dialog->askHiddenResponseAndValidate(
-                $output,
-                $question,
-                $validator,
-                $attempts,
-                $default
-            );
-        }
+        return $baseConfig;
     }
 }
